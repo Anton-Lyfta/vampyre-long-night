@@ -6,6 +6,7 @@
 import type { Content } from '../content/index.js';
 import type { ArtifactKey } from '../content/artifacts.js';
 import type { MapTemplate } from '../content/maps/types.js';
+import { STARTING_CITY_SPECIALS } from '../content/titles.js';
 import type { Clan, Discipline, DisciplineLevel, Faction, MinionLevel, MinionType, Stat, Title } from './enums.js';
 import {
   cityId as toCityId,
@@ -128,6 +129,16 @@ export interface ArtifactSetup {
   readonly boundDiscipline?: Discipline;
 }
 
+/**
+ * Startuppgradering som gäller vampyrens startstad (gd:719–740): permanent
+ * blood flow, permanent intercept eller en special. Appliceras på första staden
+ * i `controls`.
+ */
+export type StartingCityUpgrade =
+  | { readonly kind: 'blood_flow'; readonly amount: number }
+  | { readonly kind: 'intercept'; readonly amount: number }
+  | { readonly kind: 'special'; readonly key: string };
+
 export interface PlayerSetup {
   readonly name: string;
   readonly clan: Clan;
@@ -149,6 +160,8 @@ export interface PlayerSetup {
   readonly royalPrivileges?: number;
   /** Start-VP (Inner Circle 3, gd:699). Bokförs i ledgern som `start`. */
   readonly startingVp?: number;
+  /** Startuppgraderingar för startstaden. Kräver minst en stad i `controls`. */
+  readonly startingCityUpgrades?: readonly StartingCityUpgrade[];
 }
 
 export interface CreateGameInput {
@@ -243,6 +256,29 @@ export function createGameState(input: CreateGameInput, content: Content): GameS
       const c = cities[cid] as unknown as Mutable<City>;
       if (c.controllerId !== null) throw new Error(`${who}: ${key} kontrolleras redan av ${c.controllerId}`);
       c.controllerId = id;
+    }
+
+    const upgrades = s.startingCityUpgrades ?? [];
+    if (upgrades.length > 0) {
+      const home = s.controls?.[0];
+      if (home === undefined) throw new Error(`${who}: stadsuppgraderingar kräver en kontrollerad stad`);
+      const c = cities[city(home, who)] as unknown as Mutable<City>;
+      for (const u of upgrades) {
+        if (u.kind === 'blood_flow') c.bloodFlow += u.amount;
+        else if (u.kind === 'intercept') c.intercept += u.amount;
+        else {
+          const def = STARTING_CITY_SPECIALS[u.key];
+          if (def === undefined) throw new Error(`${who}: okänd startspecial "${u.key}"`);
+          c.specials.push({
+            id: takeId(counters, 'feature'),
+            key: u.key,
+            name: def.name,
+            createdRound: 0,
+            expiresAfterRound: null,
+            data: { origin: 'starting_upgrade', ownerId: id, text: def.text },
+          });
+        }
+      }
     }
 
     for (const m of s.minions ?? []) {

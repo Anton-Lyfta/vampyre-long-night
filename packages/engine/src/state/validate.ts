@@ -159,7 +159,9 @@ export function validateState(state: GameState, content: Content): StateIssue[] 
     if (!a) continue;
     const at = `artifacts.${id}`;
     if (!ARTIFACT_KEYS.includes(a.definition)) add(at, `okänd definition ${a.definition}`);
-    if (requiresBoundDiscipline(a.definition) !== (a.boundDiscipline !== null)) {
+    // Ring of Tremere väljer disciplin när någon får den (gd:420): obunden i pool eller stad är ok.
+    const unheld = a.holder.kind === 'pool' || a.holder.kind === 'city';
+    if (requiresBoundDiscipline(a.definition) ? a.boundDiscipline === null && !unheld : a.boundDiscipline !== null) {
       add(at, `boundDiscipline ska ${requiresBoundDiscipline(a.definition) ? '' : 'inte '}vara satt för ${a.definition}`);
     }
     const h = a.holder;

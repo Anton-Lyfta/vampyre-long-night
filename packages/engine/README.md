@@ -17,6 +17,7 @@ npm run typecheck    # tsc --noEmit
 | `src/content/` | Referensdata: klaner, discipliner, titlar, minion-typer, artefakter, regelkonstanter, kartmallar |
 | `src/rng.ts` | Seedad RNG (sfc32), serialiserbar, med delströmmar |
 | `src/round/` | Rondens skelett (egen tråd) |
+| `src/characters/` | Karaktärsskapande, backlog, lobby och kampanjstart (`docs/decisions/characters.md`) |
 | `test/` | Tester och fixturer (`test/fixtures.ts` har en kampanj med en spelare per titel) |
 
 Besluten bakom modellen står i `docs/decisions/state.md`.

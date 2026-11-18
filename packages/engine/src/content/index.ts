@@ -6,6 +6,7 @@ import type { Clan, Discipline, MinionType, Title } from '../state/enums.js';
 import { ARTIFACT_DEFINITIONS, type ArtifactDefinition, type ArtifactKey } from './artifacts.js';
 import { CLAN_DEFINITIONS, type ClanDefinition } from './clans.js';
 import { DISCIPLINE_DEFINITIONS, type DisciplineDefinition } from './disciplines.js';
+import { EXP_UPGRADE_DEFINITIONS, type ExpUpgradeDefinition, type ExpUpgradeKey } from './expUpgrades.js';
 import { MINION_TYPE_DEFINITIONS, type MinionTypeDefinition } from './minions.js';
 import { DEFAULT_RULES, type RulesConfig } from './rules.js';
 import { TITLE_DEFINITIONS, type TitleDefinition } from './titles.js';
@@ -17,6 +18,7 @@ export interface Content {
   readonly titles: Readonly<Record<Title, TitleDefinition>>;
   readonly minionTypes: Readonly<Record<MinionType, MinionTypeDefinition>>;
   readonly artifacts: Readonly<Record<ArtifactKey, ArtifactDefinition>>;
+  readonly expUpgrades: Readonly<Record<ExpUpgradeKey, ExpUpgradeDefinition>>;
 }
 
 export const DEFAULT_CONTENT: Content = {
@@ -26,11 +28,13 @@ export const DEFAULT_CONTENT: Content = {
   titles: TITLE_DEFINITIONS,
   minionTypes: MINION_TYPE_DEFINITIONS,
   artifacts: ARTIFACT_DEFINITIONS,
+  expUpgrades: EXP_UPGRADE_DEFINITIONS,
 };
 
 export * from './artifacts.js';
 export * from './clans.js';
 export * from './disciplines.js';
+export * from './expUpgrades.js';
 export * from './minions.js';
 export * from './rules.js';
 export * from './titles.js';

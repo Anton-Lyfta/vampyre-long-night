@@ -25,3 +25,9 @@ Sidofynd som inte hör till pågående scope. Skriv var fyndet gjordes.
 - [ ] Brujah-rabatt mitt i ronden ska återbetalas i fas 5 (M7).
 - [ ] `ActionDefinition` är data + TypeScript-handler; utvärdera "data + effektprimitiver" (SPEC B11) när några aktioner byggts (R19).
 - [ ] Per-spelare-vyer ska filtrera `RoundResolution.events` (steg 4). Events saknar ännu `audience` (M18).
+
+## Karaktärsskapande (hittat under `docs/decisions/characters.md`)
+- [ ] **Titelfördelning per kampanj** (K12): ska det finnas tak per titel, och hur undviker vi att ett tak på Archbishop avslöjar antalet Sabbat-spelare?
+- [ ] **Ring of Tremere som startartefakt** (K14): låt spelaren välja disciplin i stället för seedat val.
+- [ ] **Toreador-obsession** (C8) dras fortfarande inte vid kampanjstart.
+- [ ] **Regelboken säger att GM delar ut titel** (gd:658). Uppdatera när spelarvalet (K1) är bekräftat i designen.

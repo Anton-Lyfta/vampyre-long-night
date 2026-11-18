@@ -145,6 +145,7 @@ Regelboksreferenser anges som `gd:NNN` (radnummer i `docs/rules/game_design.txt`
 ### S21. Skapande av kampanj
 **Beslut:** `createGameState` tar emot **färdiga** karaktärer (klan, discipliner, stat-bonusar per källa, minions, artefakter) och en kartmall, och kastar om resultatet bryter mot en invariant. Titlarnas startpaket finns som data i `content/titles.ts` men valideras inte här; det hör till karaktärsskapandet (SPEC B7). Två regler tillämpas automatiskt: Banu Haqim får permanent −1 Strength och Archons får 3 loyalty counters.
 **Inte med än:** Toreador-obsessionen (C8) dras inte vid skapande ännu; fältet finns och är `null`.
+**Tillägg 2026-11-18:** Karaktärsskapandet ligger i `src/characters/` och producerar `PlayerSetup` (se [`characters.md`](characters.md)). `PlayerSetup.startingCityUpgrades` lades till för startstadens uppgraderingar.
 
 ### S22. Validering
 **Beslut:** `validateState` returnerar en lista med alla brott (sökväg och meddelande) i stället för att kasta. Den kontrollerar bl.a.: ren JSON, att nycklar matchar id, att genererade id ligger under räknaren, referenser mellan entiteter, symmetriskt och sorterat grannskap, hamn ⇔ havsregion, stadsstats inom intervall, titel och sekt hänger ihop, disguise bara på Archbishops, blood ≥ 0, EXP ≤ 12, max en artefakt per minion, Sabbat-baser level 1–3.
