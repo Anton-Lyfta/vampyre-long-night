@@ -1,5 +1,6 @@
 import type { Content, Faction, GameState, MinionId, MinionType, Mutable, Player, Rng, Title, WorkingState } from './deps.js';
-import type { ActionId, EntryRecord, Json, SubmittedAction } from './types.js';
+import type { ActionId, Audience, EntryRecord, Json, SubmittedAction } from './types.js';
+import type { CityId, PlayerId } from './deps.js';
 
 export type ActionCategory = 'personal' | 'faction' | 'minion' | 'discipline' | 'artifact';
 export type ActionStealth = number | 'undetectable' | 'cant_be_hidden';
@@ -19,7 +20,8 @@ export interface ActionContext {
   player: Mutable<Player>;
   /** Egen delström för den här entryn (M9): `action/<entryId>`. */
   rng: Rng;
-  emit(kind: string, data?: { [key: string]: Json }): void;
+  /** Skapar ett event. Standardpubliken är den agerande spelaren (M18). */
+  emit(kind: string, data?: { [key: string]: Json }, audience?: Audience): void;
   scratch: { [key: string]: Json };
   /** Celerity (M5): lös spelarens `count` nästa pending entries direkt, i samma slot. */
   resolveImmediately(count: number): void;
@@ -30,6 +32,18 @@ export interface EligibilityContext {
   content: Content;
   player: Player;
   action: SubmittedAction;
+}
+
+export interface TargetContext {
+  state: GameState;
+  content: Content;
+  entry: EntryRecord;
+}
+
+export interface ActionTargets {
+  cities?: CityId[];
+  players?: PlayerId[];
+  minions?: MinionId[];
 }
 
 export interface ActionDefinition {
@@ -62,6 +76,11 @@ export interface ActionDefinition {
   grantsMinionAction?: boolean;
   /** Extra kontroller (diskipliner, artefakter, mål). Returnerar felmeddelande eller null. */
   eligible?: (ctx: EligibilityContext) => string | null;
+  /**
+   * Aktionens mål, läst innan handlern körs. Avgör controller-sikt (målstädernas
+   * controller, gd:115) och vad observatörer får veta (M17). Utelämnad = inga mål.
+   */
+  targets?: (ctx: TargetContext) => ActionTargets;
   resolve(ctx: ActionContext): ActionOutcome;
   /** Anropas med plattformens svar när en interrupt från denna aktion besvaras. */
   resume?(ctx: ActionContext, result: { [key: string]: Json }): ActionOutcome;
