@@ -29,7 +29,7 @@ import {
   apparentFaction,
   apparentTitle,
   baseActionBudget,
-  baseIvoryTowerVotes,
+  baseSocietyVotes,
   cityStat,
   domainCityIds,
   isHiddenArchbishop,
@@ -177,7 +177,8 @@ export interface SelfView {
   /** Grundbudget för vampyraktioner (M6), före Royal Privileges och schemes. */
   baseActionBudget: number;
   domain: CityId[];
-  ivoryTowerVotes: number;
+  /** Röster i Vampiric Society (V18). */
+  societyVotes: number;
   minions: OwnMinionView[];
   artifacts: OwnArtifactView[];
   missions: MissionView[];
@@ -270,8 +271,8 @@ export interface ResourcesView {
   /** Egna artefakter, både de vampyren och egna minions bär. */
   artifacts: number;
   minions: number;
-  /** Röster i Ivory Tower från titeln (gd:578), utan Buy Votes för ronden. */
-  ivoryTowerVotes: number;
+  /** Röster i Vampiric Society från skenbar titel (V18), utan Buy Votes för ronden. */
+  votes: number;
 }
 
 export interface PlayerView {
@@ -334,7 +335,7 @@ export function buildPlayerView(
       vp: me.vp,
       artifacts: me.artifacts.length,
       minions: me.minions.length,
-      ivoryTowerVotes: me.ivoryTowerVotes,
+      votes: me.societyVotes,
     },
     map: buildMapView(state, content, viewerId, events),
     players: sortedValues(state.players).map((p) => publicPlayer(p, isSabbat)),
@@ -445,7 +446,7 @@ function selfView(state: GameState, content: Content, p: Player): SelfView {
     actionBudgetModifiers: p.actionBudgetModifiers.map((m) => cloneJson(m)),
     baseActionBudget: baseActionBudget(state, content, p.id),
     domain: p.status === 'burned' ? [] : domainCityIds(state, content, p.id),
-    ivoryTowerVotes: baseIvoryTowerVotes(content, p),
+    societyVotes: baseSocietyVotes(content, p),
     minions: ownMinions.map((m) => ({
       id: m.id,
       name: m.name,

@@ -158,8 +158,10 @@ describe('kartan: egna pjäser och resursraden', () => {
 
   it('resursraden', () => {
     const v = buildPlayerView(state, content, P.inner);
-    expect(v.resources).toEqual({ blood: v.me.blood, vp: 3, artifacts: 1, minions: 4, ivoryTowerVotes: 4 });
-    expect(buildPlayerView(state, content, P.baron).resources.ivoryTowerVotes).toBe(0);
+    expect(v.resources).toEqual({ blood: v.me.blood, vp: 3, artifacts: 1, minions: 4, votes: 4 });
+    // Alla sekter röstar; den dolda Archbishopen röstar som sin förklädnad (Prince).
+    expect(buildPlayerView(state, content, P.untitled).resources.votes).toBe(1);
+    expect(buildPlayerView(state, content, P.bishop).resources.votes).toBe(2);
   });
 });
 
