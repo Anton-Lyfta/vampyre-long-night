@@ -1,0 +1,188 @@
+import { useMemo, useState } from 'react';
+import {
+  DndContext,
+  KeyboardSensor,
+  PointerSensor,
+  closestCenter,
+  useSensor,
+  useSensors,
+  type DragEndEvent,
+} from '@dnd-kit/core';
+import { SortableContext, sortableKeyboardCoordinates, useSortable, verticalListSortingStrategy } from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
+import { addAction, moveAction, removeAction, shiftAction } from '../screen/draft';
+import type { DraftAction, DraftEntryInfo, PlayerScreenPort } from '../screen/model';
+import { ActionComposer } from './ActionComposer';
+
+function Blood({ amount, income }: { amount: number | null; income?: boolean }) {
+  return (
+    <span className={income ? 'blood income' : 'blood'}>
+      {income ? '+' : ''}
+      {amount ?? '?'} <span aria-hidden>🩸</span>
+      <span className="sr-only"> blood{income ? ' inkomst' : ''}</span>
+    </span>
+  );
+}
+
+interface RowProps {
+  action: DraftAction;
+  info: DraftEntryInfo;
+  index: number;
+  count: number;
+  locked: boolean;
+  onRemove: () => void;
+  onShift: (d: -1 | 1) => void;
+}
+
+function DraftRow({ action, info, index, count, locked, onRemove, onShift }: RowProps) {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
+    id: action.uid,
+    disabled: locked,
+  });
+  return (
+    <li
+      ref={setNodeRef}
+      style={{ transform: CSS.Transform.toString(transform), transition }}
+      className={`action-banner filled${isDragging ? ' dragging' : ''}${info.errors.length ? ' has-error' : ''}`}
+      data-testid="draft-row"
+    >
+      {!locked && (
+        <button type="button" className="drag-handle" aria-label={`Flytta ${info.label}`} {...attributes} {...listeners}>
+          ⠿
+        </button>
+      )}
+      <span className="performer" title={info.performerName} aria-label={info.performerKind === 'vampire' ? 'Vampyr' : `Minion ${info.performerName}`}>
+        {info.performerKind === 'vampire' ? 'V' : 'M'}
+      </span>
+      <span className="action-label">
+        {index + 1}. {info.label}
+        {info.performerKind === 'minion' && <span className="performer-name"> ({info.performerName})</span>}
+        {info.errors.map((e) => (
+          <span key={e} className="row-error" role="alert">
+            {e}
+          </span>
+        ))}
+      </span>
+      <span className="action-cost">
+        <Blood amount={info.cost} />
+        {info.income !== null && info.income > 0 && <Blood amount={info.income} income />}
+      </span>
+      {!locked && (
+        <span className="row-tools">
+          <button type="button" aria-label="Flytta upp" disabled={index === 0} onClick={() => onShift(-1)}>
+            ↑
+          </button>
+          <button type="button" aria-label="Flytta ned" disabled={index === count - 1} onClick={() => onShift(1)}>
+            ↓
+          </button>
+          <button type="button" aria-label={`Ta bort ${info.label}`} onClick={onRemove}>
+            ✕
+          </button>
+        </span>
+      )}
+    </li>
+  );
+}
+
+export function ActionPanel({ port, round }: { port: PlayerScreenPort; round: number }) {
+  const [draft, setDraft] = useState<DraftAction[]>([]);
+  const [locked, setLockedState] = useState(port.isLocked());
+  const [confirmErrors, setConfirmErrors] = useState<string[]>([]);
+  const analysis = useMemo(() => port.analyze(draft), [port, draft]);
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 4 } }),
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
+  );
+
+  const onDragEnd = (e: DragEndEvent) => {
+    if (e.over && e.active.id !== e.over.id) setDraft((d) => moveAction(d, String(e.active.id), String(e.over!.id)));
+  };
+  const net = analysis.totalCost - analysis.totalIncome;
+  const overAp = analysis.apUsed > analysis.apTotal;
+
+  return (
+    <section className="action-panel" aria-label="Actions">
+      <h2>Actions rond {round}</h2>
+      <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={onDragEnd}>
+        <SortableContext items={draft.map((a) => a.uid)} strategy={verticalListSortingStrategy}>
+          <ol className="draft-list">
+            {draft.map((a, i) => (
+              <DraftRow
+                key={a.uid}
+                action={a}
+                info={analysis.entries[i]!}
+                index={i}
+                count={draft.length}
+                locked={locked}
+                onRemove={() => setDraft((d) => removeAction(d, a.uid))}
+                onShift={(delta) => setDraft((d) => shiftAction(d, a.uid, delta))}
+              />
+            ))}
+          </ol>
+        </SortableContext>
+      </DndContext>
+      {!locked && (
+        <ActionComposer
+          port={port}
+          draft={draft}
+          onAdd={(choice, params, labels) => setDraft((d) => addAction(d, choice.actionId, choice.performer, params, labels))}
+        />
+      )}
+      <div className="action-summary">
+        <div className={overAp ? 'ap over' : 'ap'} data-testid="ap-used">
+          {analysis.apUsed}/{analysis.apTotal} action points used
+        </div>
+        {analysis.minionActions.map((m) => (
+          <div
+            key={m.minionId}
+            className={m.used > m.allowed ? 'ap minion over' : 'ap minion'}
+            data-testid={`minion-ap-${m.minionId}`}
+          >
+            {m.name}: {m.used}/{m.allowed}
+          </div>
+        ))}
+        <div className="total-cost" data-testid="total-cost" title="Total kostnad minus säker inkomst">
+          <Blood amount={net} />
+        </div>
+      </div>
+      {[...analysis.errors, ...confirmErrors].map((e) => (
+        <p key={e} className="panel-error" role="alert">
+          {e}
+        </p>
+      ))}
+      {analysis.warnings.map((w) => (
+        <p key={w} className="panel-warning">
+          {w}
+        </p>
+      ))}
+      {locked ? (
+        <div className="confirmed">
+          <p>Actions inlämnade.</p>
+          <button
+            type="button"
+            onClick={() => {
+              port.unlock();
+              setLockedState(false);
+            }}
+          >
+            Ändra
+          </button>
+        </div>
+      ) : (
+        <button
+          type="button"
+          className="confirm"
+          disabled={!analysis.canConfirm}
+          title={overAp ? 'För många actions för dina action points' : undefined}
+          onClick={() => {
+            const res = port.confirm(draft);
+            setConfirmErrors(res.errors);
+            if (res.ok) setLockedState(true);
+          }}
+        >
+          Confirm actions
+        </button>
+      )}
+    </section>
+  );
+}

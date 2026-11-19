@@ -6,6 +6,7 @@
   ],
   "scripts": {
     "test": "npm test --workspaces --if-present",
-    "typecheck": "npm run typecheck --workspaces --if-present"
+    "typecheck": "npm run typecheck --workspaces --if-present",
+    "dev": "npm run dev -w @vampyre/web"
   }
 }
