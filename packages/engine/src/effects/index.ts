@@ -13,6 +13,7 @@ import { domainCityIds, minionEffectiveLevel } from '../state/queries.js';
 import type { GameState } from '../state/types.js';
 import { addIncome, bleedCity, rollSum } from './blood.js';
 import { moveEffect } from './movement.js';
+import { awaken, bestowGifts, controlTheMasquerade, getAMinion, statBuff } from './simple.js';
 import { fail, ok, performerCity, performerMinion } from './util.js';
 
 export type Effect = Pick<ActionDefinition, 'resolve'> & Partial<Pick<ActionDefinition, 'resume'>>;
@@ -73,6 +74,17 @@ const BASE_EFFECTS: Record<string, Effect> = {
   bleed: { resolve: bleed },
   bleed_the_enemy: { resolve: bleedTheEnemy },
   artifact_aarons_feeding_razor: { resolve: aaronsFeedingRazor },
+  // Personliga buffar resten av ronden (E14, E15)
+  watchful_eyes: { resolve: statBuff('intercept', 1) },
+  in_the_shadows: { resolve: statBuff('stealth', 1) },
+  blood_for_blood: { resolve: statBuff('strength', 1) },
+  hide: { resolve: statBuff('stealth', 5, { ignoresRuleOfThree: true }) },
+  // Minions och torpor
+  get_a_minion: { resolve: getAMinion },
+  bestow_gifts: { resolve: bestowGifts },
+  awaken: { resolve: awaken },
+  // Städer
+  control_the_masquerade: { resolve: controlTheMasquerade },
   // Inkomst (fas 5c)
   bottomless_wealth_of_the_camarilla: { resolve: income(250) },
   artifact_diamond_of_toreador: { resolve: income(25) },

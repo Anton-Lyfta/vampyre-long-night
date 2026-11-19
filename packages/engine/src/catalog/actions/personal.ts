@@ -115,6 +115,11 @@ export const PERSONAL_ACTIONS: ActionDefinition[] = [
       },
       { key: 'level', label: 'Level', kind: 'number', range: () => ({ min: 1, max: 3, step: 1 }) },
     ],
+    // The broken pyramid (Tremere-curse, gd:832): inga Lvl 3-minions.
+    eligible: ({ view, content, action }) =>
+      action.params?.level === 3 && content.clans[view.me.clan].curse.key === 'the_broken_pyramid'
+        ? 'The broken pyramid: kan inte ha Lvl 3-minions'
+        : null,
   }),
   define({
     id: 'grow_in_power',
