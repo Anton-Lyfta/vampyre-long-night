@@ -44,3 +44,4 @@ Sidofynd som inte hör till pågående scope. Skriv var fyndet gjordes.
 - [ ] **(M)Presence-stealth** ska vara den valda aktionens; observationen läser idag `def.stealth` (0) (K9).
 - [ ] **Känd information i målval:** när motorn vet vad en spelare garanterat vet (kartvyn), sortera kända mål "i samma stad" överst (K3).
 - [ ] **Regelbokens rubrik "Bottles wealth of the camarilla"** (gd:1047) ska vara Bottomless Wealth. "Presens"/"Pressens" och "Visisetude" är också felstavade.
+- [ ] **Dold aktör per aktion:** Gustaf 2026-11-19: vissa actions har en gömd aktör (man får veta att något hänt men inte vem, om man inte lyckas med en rullning), och det skiljer sig mellan actions. Regelboken säger inte vilka. Lägg ett fält på `ActionDefinition` (t.ex. `actorHidden`) i katalogen och låt observationen (`observersOfAction`) läsa det, när listan över vilka actions det gäller finns.
