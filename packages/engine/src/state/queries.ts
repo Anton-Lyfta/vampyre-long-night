@@ -255,13 +255,13 @@ export function baseActionBudget(state: GameState, content: Content, playerId: P
 }
 
 /**
- * Röster i Ivory Tower utifrån titel (gd:582–585), utan Buy Votes och Elysium.
- * Skenbar sekt avgör, så en Archbishop förklädd till Prince röstar som Prince.
- * Vampyrer utanför Camarilla har 0 (de kan rösta via Buy Votes, gd:578).
+ * Röster i Vampiric Society (tidigare Ivory Tower) utifrån skenbar titel
+ * (gd:582–585), utan Buy Votes och Elysium. Alla sekter röstar (Gustaf
+ * 2026-11-19, V18). En Archbishop förklädd till Prince röstar som Prince.
+ * Öppet: röster för Anarch-titlar och för en exponerad Archbishop (content säger 0).
  */
-export function baseIvoryTowerVotes(content: Content, player: Player): number {
+export function baseSocietyVotes(content: Content, player: Player): number {
   if (player.status === 'burned') return 0;
-  if (apparentFaction(player) !== 'camarilla') return 0;
   const title = apparentTitle(player);
   return title ? content.titles[title].ivoryTowerVotes : UNTITLED.camarillaIvoryTowerVotes;
 }

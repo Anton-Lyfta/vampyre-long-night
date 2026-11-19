@@ -81,6 +81,12 @@ export interface ActionDefinition {
    * controller, gd:115) och vad observatörer får veta (M17). Utelämnad = inga mål.
    */
   targets?: (ctx: TargetContext) => ActionTargets;
+  /**
+   * Staden utföraren hamnar i om aktionen lyckas (Move, Sail, Second tradition).
+   * Läst innan handlern körs. Avgör var observatörer ser utföraren på kartan och
+   * ger destinationens controller sikt (M18, V16). Utelämnad = utföraren stannar.
+   */
+  destination?: (ctx: TargetContext) => CityId | null;
   resolve(ctx: ActionContext): ActionOutcome;
   /** Anropas med plattformens svar när en interrupt från denna aktion besvaras. */
   resume?(ctx: ActionContext, result: { [key: string]: Json }): ActionOutcome;
