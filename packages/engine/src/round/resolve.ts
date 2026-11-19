@@ -37,6 +37,7 @@ import type {
   Submission,
 } from './types.js';
 import { normalizeSubmission } from './validate.js';
+import { payBleedIncome, payCityIncome, payOtherIncome } from '../effects/income.js';
 
 /** Rondens faser i exakt ordning (SPEC A16, game_design.txt rad 935–960). */
 export const PHASES: readonly PhaseId[] = [
@@ -173,6 +174,15 @@ function run(res: RoundResolution, submissions: Record<PlayerId, Submission> | n
           return { status: 'suspended', interrupts: clone(res.pendingInterrupts), resolution: res };
         }
         break;
+      case '5a_city_income':
+        payCityIncome(phaseContext(res, phase, opts));
+        break;
+      case '5b_bleed_income':
+        payBleedIncome(phaseContext(res, phase, opts));
+        break;
+      case '5c_other_income':
+        payOtherIncome(phaseContext(res, phase, opts));
+        break;
       case '5d_advance_round':
         advanceRound(res);
         break;
@@ -191,20 +201,22 @@ function run(res: RoundResolution, submissions: Record<PlayerId, Submission> | n
   return { status: 'completed', state: res.state as GameState, resolution: res };
 }
 
+function phaseContext(res: RoundResolution, phase: PhaseId, opts: ResolveOptions): PhaseContext {
+  return {
+    state: res.state,
+    content: opts.content,
+    resolution: res,
+    phase,
+    emit: (kind, data, playerId, audience) => emit(res, phase, kind, data, playerId, undefined, audience),
+    rng: (...parts) => createRng(deriveSeed(res.seed, 'phase', phase, ...parts)),
+    endGame: (reason) => {
+      res.scratch.gameOver = reason;
+    },
+  };
+}
+
 function runHooks(res: RoundResolution, phase: PhaseId, opts: ResolveOptions): void {
-  for (const hook of opts.hooks?.[phase] ?? []) {
-    hook({
-      state: res.state,
-      content: opts.content,
-      resolution: res,
-      phase,
-      emit: (kind, data, playerId, audience) => emit(res, phase, kind, data, playerId, undefined, audience),
-      rng: (...parts) => createRng(deriveSeed(res.seed, 'phase', phase, ...parts)),
-      endGame: (reason) => {
-        res.scratch.gameOver = reason;
-      },
-    });
-  }
+  for (const hook of opts.hooks?.[phase] ?? []) hook(phaseContext(res, phase, opts));
 }
 
 function emit(
@@ -524,6 +536,11 @@ function advanceRound(res: RoundResolution): void {
   }
   state.round += 1;
   state.phase = 'submission';
+  // Utgångna stadsmodifiers (t.ex. rondens bleeds, E7) tas bort så att state inte växer.
+  for (const id of sortedIds(state.cities)) {
+    const city = state.cities[id]!;
+    city.modifiers = city.modifiers.filter((m) => m.expiresAfterRound === null || m.expiresAfterRound >= state.round);
+  }
   for (const pid of sortedPlayerIds(state)) {
     const p = state.players[pid]!;
     p.actionBudgetModifiers = p.actionBudgetModifiers.filter((m) => m.round >= state.round);

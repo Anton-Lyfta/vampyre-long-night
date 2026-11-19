@@ -29,7 +29,9 @@ export const PERSONAL_ACTIONS: ActionDefinition[] = [
     category: 'personal',
     performer: 'vampire',
     stealth: 2,
-    cost: ({ view }) => (view.me.title === 'justicar' ? 5 : 10),
+    // Justicar 5, annars 10 (gd:1135). Monstrous (Nosferatu-curse, gd:804): +5.
+    cost: ({ view, content }) =>
+      (view.me.title === 'justicar' ? 5 : 10) + (content.clans[view.me.clan].curse.key === 'monstrous' ? 5 : 0),
     trifle: (me) => me.title === 'justicar',
     params: [cityParam('to', 'Till stad', (ctx) => citiesAdjacentTo(ctx, here(ctx)))],
     moves: movesTo(),

@@ -6,7 +6,7 @@
  * mål som är giltiga, vad den kostar och ger, och hur den räknas mot budgeten.
  * Beslut: docs/decisions/catalog.md.
  */
-export { ACTION_CATALOG } from './registry.js';
+export { ACTION_CATALOG, stubbedActionIds } from './registry.js';
 export * from './types.js';
 export { analyzeDraft, nextParam, projectPositions, requirementProblem, isListLevelCode } from './analyze.js';
 export type { DraftAnalysis, DraftEntryAnalysis, DraftSubmission, MinionActionCount, ParamRequest, AnalyzeOptions } from './analyze.js';

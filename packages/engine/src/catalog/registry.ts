@@ -5,7 +5,8 @@ import { DISCIPLINE_ACTIONS } from './actions/discipline.js';
 import { FACTION_ACTIONS } from './actions/faction.js';
 import { MINION_ACTIONS } from './actions/minion.js';
 import { PERSONAL_ACTIONS } from './actions/personal.js';
-import { define } from './define.js';
+import { withEffects } from '../effects/index.js';
+import { define, stub } from './define.js';
 import { withDestinations } from './destination.js';
 import { strParam } from './options.js';
 import type { CatalogContext } from './types.js';
@@ -53,9 +54,19 @@ const PRESENCE_M = define({
 });
 
 export const ACTION_CATALOG: ActionRegistry = createRegistry(
-  withDestinations(
-    [...PERSONAL_ACTIONS, ...FACTION_ACTIONS, ...DISCIPLINE_ACTIONS, PRESENCE_M, ...MINION_ACTIONS, ...ARTIFACT_ACTIONS],
-    () => ACTION_CATALOG,
+  withEffects(
+    withDestinations(
+      [...PERSONAL_ACTIONS, ...FACTION_ACTIONS, ...DISCIPLINE_ACTIONS, PRESENCE_M, ...MINION_ACTIONS, ...ARTIFACT_ACTIONS],
+      () => ACTION_CATALOG,
+    ),
   ),
 );
+
+/** Aktioner som fortfarande löses utan effekt (stubbar). Motorns DoD: tom lista. */
+export function stubbedActionIds(registry: ActionRegistry = ACTION_CATALOG): string[] {
+  return Object.values(registry)
+    .filter((d) => d.resolve === stub)
+    .map((d) => d.id)
+    .sort();
+}
 
