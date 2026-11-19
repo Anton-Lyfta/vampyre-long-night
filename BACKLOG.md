@@ -32,3 +32,7 @@ Sidofynd som inte hör till pågående scope. Skriv var fyndet gjordes.
 - [ ] **Vy av en pausad strid:** `RoundResolution` under `awaitingCombat` har ingen spelarvy. Byggs med combat.
 - [ ] **Avslöjande aktioner:** Investigate, Search, Auspex m.fl. ska kunna göra dolda fält synliga för en spelare. Behöver en modell för "känd information" per spelare när aktionerna byggs.
 - [ ] **Motsägelse om controller-sikt:** gd:115 säger "target and originate", gd:498 "against or in". Tolkat som samma sak (startstad + målstäder).
+
+## Karaktärsskapande (hittat under `docs/decisions/characters.md`)
+- [ ] **Ring of Tremere är avstängd** (K14): den ligger inte i slumppoolen eftersom man ska välja disciplin när man får den (gd:420). Hitta ett sätt att hantera valet (startartefakt, Search, My treasure, stöld) och slå på den igen.
+- [ ] **Toreador-obsession** (C8) dras fortfarande inte vid kampanjstart.

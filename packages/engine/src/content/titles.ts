@@ -207,3 +207,19 @@ export const UNTITLED = {
   /** Gäller bara om vampyren tillhör Camarilla. */
   camarillaIvoryTowerVotes: 1,
 } as const;
+
+/** Specials som en Baron kan ge sin startstad (gd:738–740). Nyckeln blir `CityFeature.key`. */
+export const STARTING_CITY_SPECIALS: Readonly<Record<string, { readonly name: string; readonly text: string }>> = {
+  anarch_stronghold: {
+    name: 'Anarch Stronghold',
+    text: 'During combat in this city its controller gains +2 to the combat dice.',
+  },
+  anarch_political_hub: {
+    name: 'Anarch political hub',
+    text: 'Every round name a city. Give the named city +/- 1 stability.',
+  },
+  anarch_free_press: {
+    name: 'Anarch free press',
+    text: 'At the start of the round gain a lvl 1 Ghoul or Eye minion.',
+  },
+};

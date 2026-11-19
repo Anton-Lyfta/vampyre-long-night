@@ -19,6 +19,7 @@ npm run typecheck    # tsc --noEmit
 | `src/round/` | Rondens skelett: inlämning, budget, `resolveRound` |
 | `src/view/` | Per-spelare-vyer (`buildPlayerView`), GM-vy och observation (`observersOfAction`) |
 | `src/demo.ts` | Demokampanj för gränssnittet (`createDemoGame`, `createDemoRound`) |
+| `src/characters/` | Karaktärsskapande, backlog, lobby och kampanjstart (`docs/decisions/characters.md`) |
 | `test/` | Tester och fixturer (`test/fixtures.ts` har en kampanj med en spelare per titel) |
 
 Besluten bakom modellen står i `docs/decisions/state.md`, `round.md` och `views.md`.

@@ -118,6 +118,8 @@ A "source" = any one game effect (a specific action, a specific artifact, a modi
 
 ## A3. Character Creation
 
+> **Status 2026-11-18:** GM tilldelar titel per kampanj; spelare bygger karaktärer i en backlog och kan bara använda en med den tilldelade titeln. Justicar är inte valbar i V1. Se [`docs/decisions/characters.md`](../decisions/characters.md) (K1, K2).
+
 At campaign start the GM assigns each player a **title** (and, for city titles, a **starting city** and possibly a starting artifact). The player then builds the character:
 
 1. **Concept** — flavor only (background, why they rose to power, etc.). No mechanical effect.

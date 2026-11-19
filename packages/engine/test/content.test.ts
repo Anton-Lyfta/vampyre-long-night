@@ -26,11 +26,12 @@ describe('content', () => {
     expect(Object.keys(DEFAULT_CONTENT.disciplines)).toHaveLength(14);
   });
 
-  it('30 artefakter plus den Thaumaturgy-skapade', () => {
+  it('30 artefakter plus den Thaumaturgy-skapade; Ring of Tremere är avstängd i poolen', () => {
     expect(ARTIFACT_KEYS).toHaveLength(31);
     expect(Object.keys(DEFAULT_CONTENT.artifacts).sort()).toEqual([...ARTIFACT_KEYS].sort());
     const inPool = Object.values(DEFAULT_CONTENT.artifacts).filter((a) => a.inRandomPool);
-    expect(inPool).toHaveLength(30);
+    expect(inPool).toHaveLength(29);
+    expect(DEFAULT_CONTENT.artifacts.ring_of_tremere.inRandomPool).toBe(false);
     for (const a of Object.values(DEFAULT_CONTENT.artifacts)) {
       expect(a.cost === null).toBe(a.stealth === null);
     }
