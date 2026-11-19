@@ -25,3 +25,10 @@ Sidofynd som inte hör till pågående scope. Skriv var fyndet gjordes.
 - [ ] Brujah-rabatt mitt i ronden ska återbetalas i fas 5 (M7).
 - [ ] `ActionDefinition` är data + TypeScript-handler; utvärdera "data + effektprimitiver" (SPEC B11) när några aktioner byggts (R19).
 - [ ] Per-spelare-vyer ska filtrera `RoundResolution.events` (steg 4). Events saknar ännu `audience` (M18).
+
+## Vyer (hittat under `docs/engine/views-plan.md`)
+- [ ] **Världseffekter i vyn:** `OngoingEffect` utan ägare (debattutfall m.m.) syns inte för spelare. Behöver ett publik-fält på effekten (V13).
+- [ ] **Torpor publikt eller dolt?** Provisoriskt dolt (V4). Bekräfta mot hur Discord-spelet gjorde.
+- [ ] **Vy av en pausad strid:** `RoundResolution` under `awaitingCombat` har ingen spelarvy. Byggs med combat.
+- [ ] **Avslöjande aktioner:** Investigate, Search, Auspex m.fl. ska kunna göra dolda fält synliga för en spelare. Behöver en modell för "känd information" per spelare när aktionerna byggs.
+- [ ] **Motsägelse om controller-sikt:** gd:115 säger "target and originate", gd:498 "against or in". Tolkat som samma sak (startstad + målstäder).

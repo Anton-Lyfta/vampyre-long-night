@@ -16,10 +16,25 @@ npm run typecheck    # tsc --noEmit
 | `src/state/` | `GameState`-typer, id:n, härledda värden (`queries.ts`), invarianter (`validate.ts`), skapande av kampanj (`create.ts`), JSON-hjälpare |
 | `src/content/` | Referensdata: klaner, discipliner, titlar, minion-typer, artefakter, regelkonstanter, kartmallar |
 | `src/rng.ts` | Seedad RNG (sfc32), serialiserbar, med delströmmar |
-| `src/round/` | Rondens skelett (egen tråd) |
+| `src/round/` | Rondens skelett: inlämning, budget, `resolveRound` |
+| `src/view/` | Per-spelare-vyer (`buildPlayerView`), GM-vy och observation (`observersOfAction`) |
+| `src/demo.ts` | Demokampanj för gränssnittet (`createDemoGame`, `createDemoRound`) |
 | `test/` | Tester och fixturer (`test/fixtures.ts` har en kampanj med en spelare per titel) |
 
-Besluten bakom modellen står i `docs/decisions/state.md`.
+Besluten bakom modellen står i `docs/decisions/state.md`, `round.md` och `views.md`.
+
+## Gränssnittet
+
+UI:t ska bara rendera `PlayerView`, aldrig `GameState`:
+
+```ts
+import { buildPlayerView, createDemoRound, DEFAULT_CONTENT, DEMO_PLAYERS } from '@vampyre/engine';
+
+const { state, events } = createDemoRound();
+const view = buildPlayerView(state, DEFAULT_CONTENT, DEMO_PLAYERS.prince, { events });
+// view.me = allt om den egna vampyren, view.players/cities/minions = det som är publikt,
+// view.events = det spelaren fick se under ronden.
+```
 
 ## Exempel
 

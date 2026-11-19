@@ -125,6 +125,16 @@ export interface EntryRecord {
   reason?: string;
 }
 
+/**
+ * Vem som får se ett event (M18). Räknas ut när eventet skapas och räknas aldrig
+ * om; vyerna filtrerar bara på den. Hela eventets `data` är synligt för hela
+ * publiken, så olika publiker som ska veta olika saker får olika events.
+ * - `public`: alla spelare.
+ * - `players`: bara de listade (sorterade, unika).
+ * - `gm`: bara GM-vyn (t.ex. slotordning och tekniska events).
+ */
+export type Audience = { kind: 'public' } | { kind: 'gm' } | { kind: 'players'; ids: PlayerId[] };
+
 export interface RoundEvent {
   seq: number;
   round: number;
@@ -133,6 +143,7 @@ export interface RoundEvent {
   playerId?: PlayerId;
   entryId?: EntryId;
   data?: { [key: string]: Json };
+  audience: Audience;
 }
 
 /** Något som pausar upplösningen tills plattformen skickar in ett svar (M11). */
