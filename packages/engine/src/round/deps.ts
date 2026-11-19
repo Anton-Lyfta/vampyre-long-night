@@ -3,11 +3,12 @@
 
 export type { Content } from '../content/index.js';
 export type { Faction, MinionType, Title } from '../state/enums.js';
-export type { MinionId, PlayerId } from '../state/ids.js';
+export type { CityId, MinionId, PlayerId } from '../state/ids.js';
 export type { GameState, Minion, Mutable, Player } from '../state/types.js';
 export type { Rng } from '../rng.js';
 export { createRng, deriveSeed } from '../rng.js';
 export { baseActionBudget, minionUpkeep } from '../state/queries.js';
+export { observersOfAction } from '../view/audience.js';
 export { cloneJson, compareIds, sortedIds } from '../state/json.js';
 
 import type { GameState, Mutable } from '../state/types.js';

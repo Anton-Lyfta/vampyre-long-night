@@ -1,4 +1,11 @@
-import { actionCost, SKELETON_ACTIONS, type ActionContext, type ActionOutcome, type ActionRegistry } from './actions.js';
+import {
+  actionCost,
+  SKELETON_ACTIONS,
+  type ActionContext,
+  type ActionDefinition,
+  type ActionOutcome,
+  type ActionRegistry,
+} from './actions.js';
 import { agreedSabbatScheme, royalPrivilegesSpent } from './budget.js';
 import {
   burnMinion,
@@ -7,6 +14,7 @@ import {
   createRng,
   deriveSeed,
   minionUpkeep,
+  observersOfAction,
   sortedIds,
   type Content,
   type GameState,
@@ -16,6 +24,7 @@ import {
   type WorkingState,
 } from './deps.js';
 import type {
+  Audience,
   EntryId,
   EntryRecord,
   Interrupt,
@@ -52,7 +61,11 @@ export interface PhaseContext {
   content: Content;
   resolution: RoundResolution;
   phase: PhaseId;
-  emit(kind: string, data?: { [key: string]: Json }, playerId?: PlayerId): void;
+  /**
+   * Skapar ett event. Standardpublik: `playerId` om den anges, annars bara GM (M18).
+   * Ange `audience` för publika events.
+   */
+  emit(kind: string, data?: { [key: string]: Json }, playerId?: PlayerId, audience?: Audience): void;
   /** Namngiven delström av rondens seed (M9), t.ex. rng('brujah', playerId). */
   rng(...parts: Array<string | number>): Rng;
   /** Avslutar spelet efter denna fas (masquerade-kollaps, SPEC A15). */
@@ -170,7 +183,7 @@ function run(res: RoundResolution, submissions: Record<PlayerId, Submission> | n
     res.cursor.phaseIndex += 1;
     if (res.scratch.gameOver !== undefined && phase !== '5d_advance_round') {
       res.state.phase = 'finished';
-      emit(res, phase, 'game_over', { reason: res.scratch.gameOver });
+      emit(res, phase, 'game_over', { reason: res.scratch.gameOver }, undefined, undefined, PUBLIC);
       res.cursor.phaseIndex = PHASES.length;
     }
   }
@@ -185,7 +198,7 @@ function runHooks(res: RoundResolution, phase: PhaseId, opts: ResolveOptions): v
       content: opts.content,
       resolution: res,
       phase,
-      emit: (kind, data, playerId) => emit(res, phase, kind, data, playerId),
+      emit: (kind, data, playerId, audience) => emit(res, phase, kind, data, playerId, undefined, audience),
       rng: (...parts) => createRng(deriveSeed(res.seed, 'phase', phase, ...parts)),
       endGame: (reason) => {
         res.scratch.gameOver = reason;
@@ -201,8 +214,15 @@ function emit(
   data?: { [key: string]: Json },
   playerId?: PlayerId,
   entryId?: EntryId,
+  audience?: Audience,
 ): void {
-  const ev: RoundEvent = { seq: res.events.length, round: res.round, phase, kind };
+  const ev: RoundEvent = {
+    seq: res.events.length,
+    round: res.round,
+    phase,
+    kind,
+    audience: audience ?? (playerId !== undefined ? onlyPlayers([playerId]) : GM_ONLY),
+  };
   if (playerId !== undefined) ev.playerId = playerId;
   if (entryId !== undefined) ev.entryId = entryId;
   if (data !== undefined) ev.data = data;
@@ -210,6 +230,10 @@ function emit(
 }
 
 const sortedPlayerIds = (state: WorkingState): PlayerId[] => sortedIds(state.players);
+
+const PUBLIC: Audience = { kind: 'public' };
+const GM_ONLY: Audience = { kind: 'gm' };
+const onlyPlayers = (ids: PlayerId[]): Audience => ({ kind: 'players', ids: [...new Set(ids)].sort(compareIds) });
 
 // ---------------------------------------------------------------------------
 // Fas 1a: normalisera listor, förbruka Royal Privileges, betala allt i förskott.
@@ -222,7 +246,11 @@ function payActions(
 ): void {
   const { state } = res;
   const scheme = agreedSabbatScheme(state, submissions);
-  if (Object.keys(scheme).length > 0) emit(res, '1a_pay_actions', 'sabbat_scheme_agreed', { allocation: scheme });
+  if (Object.keys(scheme).length > 0) {
+    // Bara Sabbat-spelare (sann sekt) får veta fördelningen (SPEC A14.3).
+    const sabbat = sortedPlayerIds(state).filter((id) => state.players[id]!.faction === 'sabbat');
+    emit(res, '1a_pay_actions', 'sabbat_scheme_agreed', { allocation: scheme }, undefined, undefined, onlyPlayers(sabbat));
+  }
 
   for (const pid of sortedPlayerIds(state)) {
     const player = state.players[pid]!;
@@ -350,7 +378,7 @@ function makeActionContext(
     entry,
     player: res.state.players[entry.playerId]!,
     rng: createRng(deriveSeed(res.seed, 'action', entry.id)),
-    emit: (kind, data) => emit(res, phase, kind, data, entry.playerId, entry.id),
+    emit: (kind, data, audience) => emit(res, phase, kind, data, entry.playerId, entry.id, audience),
     scratch: res.scratch,
     resolveImmediately: (count) => {
       immediate += count;
@@ -397,9 +425,50 @@ function resolveEntry(res: RoundResolution, id: EntryId, registry: ActionRegistr
     return;
   }
   const def = registry[entry.action.actionId]!;
+  observeAction(res, entry, def, content, '3a_actions');
   const { ctx, flushImmediate } = makeActionContext(res, entry, registry, content, '3a_actions');
   applyOutcome(res, entry, def.resolve(ctx), '3a_actions');
   flushImmediate();
+}
+
+/**
+ * Skapar `action_observed` för dem som ser aktionen (M16–M19). Räknas innan
+ * handlern körs, med positioner och stats just då (M18): för Move är det
+ * avreseorten. Observatören får veta vem, vilken aktion och mål (M17), inte
+ * kostnad eller utfall. Blockerade entries (bränd, torpor) observeras inte,
+ * eftersom de aldrig utförs.
+ */
+function observeAction(res: RoundResolution, entry: EntryRecord, def: ActionDefinition, content: Content, phase: PhaseId): void {
+  const state = res.state as GameState;
+  const targets = def.targets?.({ state, content, entry }) ?? {};
+  const observers = observersOfAction(state, content, {
+    playerId: entry.playerId,
+    performer: entry.action.performer,
+    stealth: def.stealth,
+    targetCities: targets.cities ?? [],
+  });
+  if (observers.kind === 'players' && observers.ids.length === 0) return;
+  const performer: { [key: string]: Json } =
+    entry.action.performer.kind === 'vampire'
+      ? { kind: 'vampire', playerId: entry.playerId }
+      : { kind: 'minion', minionId: entry.action.performer.minionId, controllerId: entry.playerId };
+  emit(
+    res,
+    phase,
+    'action_observed',
+    {
+      actionId: def.id,
+      performer,
+      targets: {
+        cities: [...(targets.cities ?? [])],
+        players: [...(targets.players ?? [])],
+        minions: [...(targets.minions ?? [])],
+      },
+    },
+    undefined,
+    undefined,
+    observers,
+  );
 }
 
 function applyOutcome(res: RoundResolution, entry: EntryRecord, outcome: ActionOutcome, phase: PhaseId): void {
@@ -441,7 +510,7 @@ function advanceRound(res: RoundResolution): void {
   const { state } = res;
   if (state.round >= state.maxRounds) {
     state.phase = 'finished';
-    emit(res, '5d_advance_round', 'game_finished', { round: state.round });
+    emit(res, '5d_advance_round', 'game_finished', { round: state.round }, undefined, undefined, PUBLIC);
     return;
   }
   state.round += 1;
@@ -450,5 +519,5 @@ function advanceRound(res: RoundResolution): void {
     const p = state.players[pid]!;
     p.actionBudgetModifiers = p.actionBudgetModifiers.filter((m) => m.round >= state.round);
   }
-  emit(res, '5d_advance_round', 'round_advanced', { round: state.round });
+  emit(res, '5d_advance_round', 'round_advanced', { round: state.round }, undefined, undefined, PUBLIC);
 }
