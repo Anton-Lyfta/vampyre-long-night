@@ -1,0 +1,106 @@
+/* Medvetet neutral styling: mockupen beskriver bara UX-upplägget. */
+:root {
+  --bg: #f4f1ea;
+  --panel: #d5d9df;
+  --panel-dark: #555;
+  --text: #1d1d1f;
+  --muted: #5f6368;
+  --banner: #c9ced6;
+  --error: #b3261e;
+  --ok: #2e8b57;
+  --camarilla: #3a5fa8;
+  --anarch: #c0392b;
+  --sabbat: #2f7d4a;
+  --none: #9aa0a6;
+  font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+  color: var(--text);
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); }
+.sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+.main-screen {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 420px;
+  grid-template-rows: auto 1fr;
+  grid-template-areas: 'top side' 'main side';
+  min-height: 100vh;
+}
+.top-bar { grid-area: top; background: var(--panel-dark); padding: 12px 16px; }
+.main-area { grid-area: main; position: relative; min-height: 0; }
+.side-panel { grid-area: side; background: var(--panel); display: flex; flex-direction: column; border-left: 2px solid #333; }
+
+.resource-bar { display: flex; flex-wrap: wrap; gap: 12px; list-style: none; margin: 0; padding: 0; }
+.resource { display: flex; align-items: center; gap: 10px; background: var(--panel); padding: 8px 16px; min-width: 110px; font-size: 1.2rem; }
+.resource-icon { font-size: 1.5rem; }
+
+.tab-menu { display: grid; grid-template-columns: repeat(6, 1fr); }
+.tab { aspect-ratio: 1; font-size: 1.5rem; border: 1px solid #aaa; background: #e8eaed; cursor: pointer; }
+.tab.active { background: #fff; outline: 2px solid var(--panel-dark); outline-offset: -2px; }
+
+.vampire-panel { text-align: center; padding: 8px; border-bottom: 2px solid #333; }
+.vampire-name { margin: 0; font-size: 1.6rem; font-weight: 500; }
+.vampire-title { margin: 0; color: var(--anarch); font-size: 1.2rem; }
+.vampire-stats { display: grid; grid-template-columns: repeat(3, 1fr); margin: 8px 0 0; }
+.vampire-stats div { display: flex; justify-content: center; align-items: center; gap: 8px; font-size: 1.6rem; border-left: 2px solid #333; }
+.vampire-stats div:first-child { border-left: 0; }
+.vampire-stats dd { margin: 0; font-weight: 700; }
+
+.action-panel { padding: 12px; display: flex; flex-direction: column; gap: 8px; background: #b9bba8; flex: 1; }
+.action-panel h2 { margin: 0; font-size: 1.6rem; }
+.draft-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+.action-banner { display: flex; align-items: center; gap: 8px; background: var(--banner); padding: 10px; min-height: 52px; }
+.action-banner.empty { justify-content: center; border: 2px dashed #777; cursor: pointer; font: inherit; color: var(--muted); }
+.action-banner.dragging { opacity: 0.7; box-shadow: 0 4px 12px rgba(0,0,0,.3); }
+.action-banner.has-error { outline: 2px solid var(--error); }
+.action-banner.composing select, .action-banner.composing input { font: inherit; padding: 4px; max-width: 100%; }
+.composing-name { font-weight: 600; }
+.number-step { display: flex; gap: 4px; }
+.number-step input { width: 6em; }
+.drag-handle { cursor: grab; background: none; border: 0; font-size: 1.2rem; touch-action: none; }
+.performer { display: inline-grid; place-items: center; width: 28px; height: 28px; border-radius: 50%; background: #333; color: #fff; font-weight: 700; flex: none; }
+.action-label { flex: 1; display: flex; flex-direction: column; }
+.performer-name { color: var(--muted); font-size: .9rem; }
+.row-error { color: var(--error); font-size: .85rem; }
+.action-cost { display: flex; flex-direction: column; align-items: flex-end; white-space: nowrap; font-weight: 600; }
+.blood.income { color: var(--ok); }
+.row-tools { display: flex; gap: 2px; }
+.row-tools button { padding: 2px 6px; }
+.link-button { background: none; border: 0; text-decoration: underline; cursor: pointer; color: var(--muted); }
+
+.action-summary { display: flex; gap: 12px; }
+.action-summary > div { background: var(--banner); padding: 8px 12px; }
+.ap.over { color: var(--error); font-weight: 700; }
+.panel-error { color: var(--error); margin: 0; }
+.panel-warning { color: #7a5a00; margin: 0; font-size: .9rem; }
+.confirm { align-self: center; background: var(--ok); color: #fff; border: 0; padding: 12px 32px; font-size: 1.1rem; cursor: pointer; }
+.confirm:disabled { background: #8a8f8a; cursor: not-allowed; }
+.confirmed { display: flex; align-items: center; gap: 12px; }
+
+.map-wrap { position: relative; height: 100%; }
+.game-map { width: 100%; height: 100%; max-height: calc(100vh - 80px); display: block; }
+.links line { stroke: #222; stroke-width: 3; }
+.city circle.faction-camarilla { fill: var(--camarilla); }
+.city circle.faction-anarch { fill: var(--anarch); }
+.city circle.faction-sabbat { fill: var(--sabbat); }
+.city circle.faction-none { fill: var(--none); }
+.city-name { text-anchor: middle; font-size: 20px; fill: var(--text); paint-order: stroke; stroke: var(--bg); stroke-width: 5px; }
+.piece circle { fill: #fff; stroke: #222; stroke-width: 2; }
+.piece.own circle { stroke: #c9a227; stroke-width: 4; }
+.piece-vampire circle { fill: #2b0a0a; }
+.piece text { text-anchor: middle; font-size: 14px; font-weight: 700; fill: #222; }
+.piece-vampire text { fill: #fff; }
+.round-badge { position: absolute; left: 0; bottom: 0; background: var(--panel); padding: 16px 24px; }
+.map-legend { position: absolute; right: 8px; bottom: 8px; list-style: none; margin: 0; padding: 8px; background: rgba(255,255,255,.8); font-size: .85rem; }
+.swatch { display: inline-block; width: 12px; height: 12px; border-radius: 50%; vertical-align: middle; }
+.swatch.faction-camarilla { background: var(--camarilla); }
+.swatch.faction-anarch { background: var(--anarch); }
+.swatch.faction-sabbat { background: var(--sabbat); }
+.swatch.faction-none { background: var(--none); }
+.placeholder { padding: 32px; }
+
+@media (max-width: 900px) {
+  .main-screen { grid-template-columns: 1fr; grid-template-areas: 'top' 'main' 'side'; }
+  .side-panel { border-left: 0; }
+  .game-map { max-height: 60vh; }
+}
