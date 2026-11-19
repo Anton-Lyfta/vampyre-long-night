@@ -323,6 +323,8 @@ export interface City {
   readonly specials: readonly CityFeature[];
   /** Aktiv masquerade violation, eller `null` (gd:915). */
   readonly masqueradeViolation: { readonly sinceRound: number } | null;
+  /** Position för kartvyn, från kartmallen. Ingen spelmekanik. */
+  readonly position?: { readonly x: number; readonly y: number };
 }
 
 export interface SeaRegion {

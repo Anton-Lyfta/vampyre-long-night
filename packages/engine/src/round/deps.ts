@@ -8,7 +8,7 @@ export type { GameState, Minion, Mutable, Player } from '../state/types.js';
 export type { Rng } from '../rng.js';
 export { createRng, deriveSeed } from '../rng.js';
 export { baseActionBudget, minionUpkeep } from '../state/queries.js';
-export { observersOfAction } from '../view/audience.js';
+export { actionOrigin, observerGroups, observersOfAction } from '../view/audience.js';
 export { cloneJson, compareIds, sortedIds } from '../state/json.js';
 
 import type { GameState, Mutable } from '../state/types.js';

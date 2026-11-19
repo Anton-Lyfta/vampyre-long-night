@@ -36,6 +36,8 @@ const { state, events } = createDemoRound();
 const view = buildPlayerView(state, DEFAULT_CONTENT, DEMO_PLAYERS.prince, { events });
 // view.me = allt om den egna vampyren, view.players/cities/minions = det som är publikt,
 // view.events = det spelaren fick se under ronden.
+// view.map = karta med bara garanterade positioner (skicka förra rondens events),
+// view.resources = resursraden (blood, VP, artefakter, minions, Vampiric Society-röster).
 ```
 
 ## Actionpanelen

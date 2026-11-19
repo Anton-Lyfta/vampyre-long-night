@@ -24,6 +24,7 @@ const travel: ActionDefinition = {
   stealth: 1,
   cost: 0,
   targets: ({ entry }) => ({ cities: [entry.action.params!.to as CityId] }),
+  destination: ({ entry }) => entry.action.params!.to as CityId,
   resolve: (ctx) => {
     ctx.player.location = ctx.entry.action.params!.to as CityId;
     ctx.emit('arrived', { city: ctx.player.location });
@@ -64,6 +65,7 @@ describe('rondens events får publik (M18)', () => {
       actionId: 'travel',
       performer: { kind: 'vampire', playerId: P.justicar },
       targets: { cities: ['east'], players: [], minions: [] },
+      at: 'east',
     });
   });
 

@@ -29,7 +29,7 @@ import {
   apparentFaction,
   apparentTitle,
   baseActionBudget,
-  baseIvoryTowerVotes,
+  baseSocietyVotes,
   cityStat,
   domainCityIds,
   isHiddenArchbishop,
@@ -63,6 +63,7 @@ import type {
 } from '../state/types.js';
 import type { Json, PhaseId, RoundEvent } from '../round/types.js';
 import { eventVisibleTo } from './events.js';
+import { buildMapView, type MapView } from './map.js';
 
 // ---------------------------------------------------------------------------
 // Typer
@@ -176,7 +177,8 @@ export interface SelfView {
   /** Grundbudget för vampyraktioner (M6), före Royal Privileges och schemes. */
   baseActionBudget: number;
   domain: CityId[];
-  ivoryTowerVotes: number;
+  /** Röster i Vampiric Society (V18). */
+  societyVotes: number;
   minions: OwnMinionView[];
   artifacts: OwnArtifactView[];
   missions: MissionView[];
@@ -262,6 +264,17 @@ export interface EventView {
   data?: { [key: string]: Json };
 }
 
+/** Resursraden överst på huvudskärmen (V18). Allt är spelarens egna värden. */
+export interface ResourcesView {
+  blood: number;
+  vp: number;
+  /** Egna artefakter, både de vampyren och egna minions bär. */
+  artifacts: number;
+  minions: number;
+  /** Röster i Vampiric Society från skenbar titel (V18), utan Buy Votes för ronden. */
+  votes: number;
+}
+
 export interface PlayerView {
   viewerId: PlayerId;
   campaignId: string;
@@ -269,6 +282,12 @@ export interface PlayerView {
   maxRounds: number;
   phase: RoundPhase;
   me: SelfView;
+  resources: ResourcesView;
+  /**
+   * Kartan: städer, kopplingar och bara de positioner spelaren garanterat vet
+   * (V15–V17). Andras positioner kräver att `events` från senast upplösta ronden skickas in.
+   */
+  map: MapView;
   /** Alla vampyrer inklusive en själv, i id-ordning. */
   players: PublicPlayerView[];
   npcs: { id: NpcId; name: string }[];
@@ -301,6 +320,8 @@ export function buildPlayerView(
   const viewer = state.players[viewerId];
   if (!viewer) throw new Error(`buildPlayerView: okänd spelare ${viewerId}`);
   const isSabbat = viewer.faction === 'sabbat';
+  const me = selfView(state, content, viewer);
+  const events = opts.events ?? [];
 
   return {
     viewerId,
@@ -308,7 +329,15 @@ export function buildPlayerView(
     round: state.round,
     maxRounds: state.maxRounds,
     phase: state.phase,
-    me: selfView(state, content, viewer),
+    me,
+    resources: {
+      blood: me.blood,
+      vp: me.vp,
+      artifacts: me.artifacts.length,
+      minions: me.minions.length,
+      votes: me.societyVotes,
+    },
+    map: buildMapView(state, content, viewerId, events),
     players: sortedValues(state.players).map((p) => publicPlayer(p, isSabbat)),
     npcs: sortedValues(state.npcs).map((n) => ({ id: n.id, name: n.name })),
     minions: sortedValues(state.minions).flatMap((m) =>
@@ -349,7 +378,7 @@ export function buildPlayerView(
       masqueradeCollapsed: state.flags.masqueradeCollapsed,
       camarillaViolationGraceUsed: state.flags.camarillaViolationGraceUsed,
     },
-    events: (opts.events ?? []).filter((e) => eventVisibleTo(e, viewerId)).map(eventView),
+    events: events.filter((e) => eventVisibleTo(e, viewerId)).map(eventView),
   };
 }
 
@@ -417,7 +446,7 @@ function selfView(state: GameState, content: Content, p: Player): SelfView {
     actionBudgetModifiers: p.actionBudgetModifiers.map((m) => cloneJson(m)),
     baseActionBudget: baseActionBudget(state, content, p.id),
     domain: p.status === 'burned' ? [] : domainCityIds(state, content, p.id),
-    ivoryTowerVotes: baseIvoryTowerVotes(content, p),
+    societyVotes: baseSocietyVotes(content, p),
     minions: ownMinions.map((m) => ({
       id: m.id,
       name: m.name,
