@@ -1,7 +1,7 @@
 # Beslut: actionkatalog och målval
 
 **Datum:** 2026-11-19
-**Status:** Fattade av Claude. K2 bekräftat av Gustaf 2026-11-19. K3 är en fråga till Gustaf (ställd 2026-11-19) där motorn byggts på rekommendationen tills han svarar. Övriga är provisoriska standardval; ändra raden här och koden i `packages/engine/src/catalog/` om du vill annorlunda.
+**Status:** Fattade av Claude. K2 bekräftat av Gustaf 2026-11-19. K3, K9, K10 och K11 är designfrågor som står som unresolved i BACKLOG.md (designern är inte tillgänglig live); motorn använder valet här tills vidare. Övriga är provisoriska standardval; ändra raden här och koden i `packages/engine/src/catalog/` om du vill annorlunda.
 **Plan:** [`docs/engine/catalog-plan.md`](../engine/catalog-plan.md) · **Bygger på:** [`round.md`](round.md) (R3, R4, R6, R19), [`views.md`](views.md), [`001_motorbeslut.md`](../engine/001_motorbeslut.md) (M4–M7, M17)
 
 ## Snabböversikt: de beslut som påverkar spelet mest
@@ -9,7 +9,7 @@
 | # | Fråga | Valt |
 |---|---|---|
 | K2 ✅ | Räknas minionaktioner i "X/Y action points"? | Nej. AP = vampyrens slots. Varje minion visar sin egen action (1/1, 2/2 med Anarch Mission). |
-| K3 ❓ | Vad visar dropdownen för mål "i samma stad" (Attack!, Diablerie, Dominate …)? | Alla vampyrer och andras minions. Är målet inte där misslyckas actionen och kostnaden återbetalas (gd:95). |
+| K3 ⏸️ | Vad visar dropdownen för mål "i samma stad" (Attack!, Diablerie, Dominate …)? | Alla vampyrer och andras minions. Är målet inte där misslyckas actionen och kostnaden återbetalas (gd:95). |
 | K4 | Räknas målval från platsen efter tidigare Move i listan? | Ja, som i skärmbilden (Move Snuk→Blorg, sedan Move Blorg→Smorg). |
 | K9 | Vad får (M)Presence utföra? | Valfri faction action utan titelkrav, även andra sekters. |
 
@@ -24,7 +24,7 @@
 **Beslut:** "X/Y action points used" räknar bara vampyrens slots (`ap`). Minionaktioner räknas per minion (`minionActions`: used/allowed). Trifle-aktionen och gratisaktioner (Give, Buy Votes, Bag of Gifts, The Evil Eye) visar 0 AP.
 **Motivering:** Regelboken ger varje minion en egen action utöver vampyrens budget (gd:217, M4). Skärmbilden visar 4/4 med en minion-Bleed bland tre vampyraktioner; det kan vara en förenkling i skissen.
 
-## K3. Mål som kräver dold information (fråga till Gustaf)
+## K3. Mål som kräver dold information (unresolved, BACKLOG)
 **Beslut:** Mål "i samma stad" eller "i din domän" listar alla tänkbara mål (alla icke-brända vampyrer, andras minions, alla artefakter), inte bara de som faktiskt är där. Kontrollen görs vid upplösning; misslyckas den återbetalas kostnaden.
 **Motivering:** En lista med bara de närvarande skulle läcka positioner. Så spelades Discord-spelet: man namnger ett mål och GM säger om det inte var där. Alternativ som Gustaf kan välja: sortera de man garanterat vet är där överst, när "känd information" finns (BACKLOG).
 

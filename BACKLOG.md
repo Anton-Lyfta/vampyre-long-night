@@ -45,3 +45,12 @@ Sidofynd som inte hör till pågående scope. Skriv var fyndet gjordes.
 - [ ] **Känd information i målval:** när motorn vet vad en spelare garanterat vet (kartvyn), sortera kända mål "i samma stad" överst (K3).
 - [ ] **Regelbokens rubrik "Bottles wealth of the camarilla"** (gd:1047) ska vara Bottomless Wealth. "Presens"/"Pressens" och "Visisetude" är också felstavade.
 - [ ] **Dold aktör per aktion:** Gustaf 2026-11-19: vissa actions har en gömd aktör (man får veta att något hänt men inte vem, om man inte lyckas med en rullning), och det skiljer sig mellan actions. Regelboken säger inte vilka. Lägg ett fält på `ActionDefinition` (t.ex. `actorHidden`) i katalogen och låt observationen (`observersOfAction`) läsa det, när listan över vilka actions det gäller finns.
+
+### Olösta designfrågor från actionkatalogen (väntar på lead game designer)
+Designern är inte tillgänglig live (Gustaf 2026-11-19). Motorn bygger på det provisoriska valet tills vidare.
+- [ ] **Unresolved: mål "i samma stad" (K3).** Ska dropdownen för Attack!, Diablerie, Dominate m.fl. lista alla vampyrer och minions (provisoriskt, läcker inga positioner) eller bara de spelaren vet är där?
+- [ ] **Unresolved: (M) Presence (K9).** Får den utföra andra sekters faction actions utan titelkrav? Provisoriskt ja.
+- [ ] **Unresolved: Thaumaturgy bas (K10).** Får man ge vilken disciplin som helst, eller bara en man själv har? Provisoriskt vilken som helst.
+- [ ] **Unresolved: upprepade val (K11).** Får Anarch Revolt, Build on the Master's Kingdom och Organize Resistance välja samma effekt flera gånger? Provisoriskt ja.
+- [ ] **Unresolved: not-fixed-actions** (`docs/engine/not-fixed-actions.md`): Wait and Strike, Dementation, (M) Dementation, Investigate, Investigate Eye, Troublemaker, Orders from the Top, Crown of Malkav och Hunt for Me ska byggas om så att de kan lösas utan GM.
+- [ ] **Unresolved: Justicar-missions** saknar källa när Orders from the Top är borttagen (påverkar Recruit an Archon, Archon-loyalty, Justicar-VP).
