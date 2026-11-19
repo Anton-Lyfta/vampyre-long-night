@@ -74,7 +74,8 @@ function artifactAction(a: ArtifactDefinition): ActionDefinition {
   });
 }
 
-const WITHOUT_OWN_ACTION: ReadonlySet<ArtifactKey> = new Set<ArtifactKey>(['ring_of_tremere', 'thaumaturgic_creation']);
+// Crown of Malkav kräver GM (skärmdump från en chatt) och är borttagen (docs/engine/not-fixed-actions.md).
+const WITHOUT_OWN_ACTION: ReadonlySet<ArtifactKey> = new Set<ArtifactKey>(['ring_of_tremere', 'thaumaturgic_creation', 'crown_of_malkav']);
 
 export const ARTIFACT_ACTIONS: ActionDefinition[] = Object.values(ARTIFACT_DEFINITIONS)
   .filter((a) => !WITHOUT_OWN_ACTION.has(a.key))

@@ -168,12 +168,12 @@ describe('målval steg för steg', () => {
     const view = viewOf(state, P.inner);
     const list = [v('presence_m')];
     const actions = optionValues(view, list, 0)!;
-    expect(actions).toContain('troublemaker');
+    expect(actions).toContain('search');
     expect(actions).not.toContain('reward_loyalty');
-    const chosen = [v('presence_m', { action: 'troublemaker' })];
+    const chosen = [v('presence_m', { action: 'search' })];
     expect(nextParam(view, content, chosen, 0)).toMatchObject({ key: 'city', kind: 'city' });
-    const done = analyzeDraft(view, content, draft([v('presence_m', { action: 'troublemaker', city: 'west' })]), {});
-    expect(done.entries[0]).toMatchObject({ complete: true, cost: 30 });
+    const done = analyzeDraft(view, content, draft([v('presence_m', { action: 'search', city: 'north' })]), {});
+    expect(done.entries[0]).toMatchObject({ complete: true, cost: 20 });
   });
 
   it('varje aktion i katalogen går att bygga klart (alla val har alternativ eller intervall)', () => {
@@ -233,7 +233,7 @@ function superView(base: PlayerView, variant: 'plain' | 'torpor' | 'exposed'): P
 function buildable(view: PlayerView, action: SubmittedAction): boolean {
   const later: SubmittedAction[] = [
     { actionId: 'bleed', performer: { kind: 'vampire' }, key: 'later-personal' },
-    { actionId: 'troublemaker', performer: { kind: 'vampire' }, params: { city: 'north' }, key: 'later-faction' },
+    { actionId: 'buy_votes', performer: { kind: 'vampire' }, params: { blood: 10 }, key: 'later-faction' },
     ...view.me.minions.slice(0, 1).map((m) => ({ actionId: 'hide_and_spy', performer: { kind: 'minion' as const, minionId: m.id }, key: 'later-minion' })),
   ];
   const list = [action, ...later];
@@ -400,5 +400,23 @@ describe('servern kör samma analys', () => {
       ['grow_in_power', 'resolved', 50],
       ['move', 'rejected', 0],
     ]);
+  });
+});
+
+describe('aktioner som kräver GM finns inte i motorn (docs/engine/not-fixed-actions.md)', () => {
+  it('är borttagna ur katalogen', () => {
+    const notFixed = [
+      'wait_and_strike',
+      'harpy_wait_and_strike',
+      'dementation',
+      'dementation_m',
+      'investigate',
+      'investigate_eye',
+      'troublemaker',
+      'orders_from_the_top',
+      'hunt_for_me',
+      'artifact_crown_of_malkav',
+    ];
+    expect(notFixed.filter((id) => id in ACTION_CATALOG)).toEqual([]);
   });
 });

@@ -10,7 +10,6 @@ import {
   characterParam,
   choiceParam,
   cityById,
-  cityFeatures,
   cityParam,
   citiesAdjacentTo,
   citiesOfSect,
@@ -70,32 +69,6 @@ const COMMON: ActionDefinition[] = [
       numParam(ctx, 'blood') === 0 && listParam(ctx, 'minions').length === 0 && listParam(ctx, 'artifacts').length === 0
         ? 'Give måste ge något'
         : null,
-  }),
-  define({
-    id: 'investigate',
-    name: 'Investigate',
-    category: 'faction',
-    performer: 'vampire',
-    stealth: 1,
-    cost: 20,
-    params: [
-      anyCity('city', 'Stad'),
-      {
-        key: 'feature',
-        label: 'Problem eller special',
-        kind: 'feature',
-        options: (ctx) => cityFeatures(ctx, strParam(ctx, 'city') as CityId | null, 'both'),
-      },
-    ],
-  }),
-  define({
-    id: 'troublemaker',
-    name: 'Troublemaker',
-    category: 'faction',
-    performer: 'vampire',
-    stealth: 0,
-    cost: 30,
-    params: [anyCity('city', 'Stad')],
   }),
   define({
     id: 'fight_for_control',
@@ -331,16 +304,6 @@ const CAMARILLA: ActionDefinition[] = [
     params: [anyCity('city', 'Stad'), choiceParam('stat', 'Effekt', STABILITY_OR_INTERCEPT)],
   }),
   // --- Justicar
-  define({
-    id: 'orders_from_the_top',
-    name: 'Orders from the Top',
-    category: 'faction',
-    performer: 'vampire',
-    stealth: 'undetectable',
-    cost: 0,
-    trifle: true,
-    titles: ['justicar'],
-  }),
   define({
     id: 'iron_fist_of_the_camarilla',
     name: 'Iron Fist of the Camarilla',

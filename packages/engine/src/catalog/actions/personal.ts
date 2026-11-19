@@ -13,7 +13,6 @@ import {
   ownMinions,
   playerParam,
   sailDestinations,
-  textParam,
   vampires,
 } from '../options.js';
 
@@ -78,15 +77,6 @@ export const PERSONAL_ACTIONS: ActionDefinition[] = [
       data: { attackerId: ctx.player.id, target: ctx.entry.action.params?.target ?? null },
     }),
     resume: () => ({ status: 'resolved' }),
-  }),
-  define({
-    id: 'wait_and_strike',
-    name: 'Wait and Strike',
-    category: 'personal',
-    performer: 'vampire',
-    stealth: 2,
-    cost: 0,
-    params: [textParam('condition', 'Villkor', 50)],
   }),
   define({
     id: 'bestow_gifts',

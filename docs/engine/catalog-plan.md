@@ -2,7 +2,7 @@
 
 **Datum:** 2026-11-19
 **Bakgrund:** Spelarens huvudskärm (bild i `docs/for_agents/main_player_screen.png`) har en actionpanel: en tom banner som öppnar en dropdown med alla actions spelaren har tillgång till (vampyrens och varje minions), sedan en dropdown per mål med bara giltiga mål, en lista som går att sortera om, "X/Y action points used", total kostnad och "Confirm actions". Motorn hade bara skelettets 16 stubbar utan mål.
-**Beslut:** [`docs/decisions/catalog.md`](../decisions/catalog.md) (K1–K19).
+**Beslut:** [`docs/decisions/catalog.md`](../decisions/catalog.md) (K1–K20).
 
 ## Research (vad som fanns)
 

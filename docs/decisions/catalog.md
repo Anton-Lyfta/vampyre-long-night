@@ -77,10 +77,14 @@ Se BACKLOG.
 **Beslut:** Aktioner har snake_case-id. Minionaktioner som flera typer delar har ett id (`minion_move`, `minion_sail`, `bodyguard`). Aktioner med samma namn men olika regler har egna id (`sabotage` för Prince, `anarch_sabotage`, `sabbat_sabotage`, `ghoul_sabotage`; `attack` och `archon_attack`). (M)-aktioner slutar på `_m`. Artefaktaktioner heter `artifact_<nyckel>`. Skelettets id:n behölls.
 
 ## K17. Fritext
-**Beslut:** Wait and Strike-villkor är fritext (högst 50 ord) tills villkorsgrammatiken (C1) finns. (M)Chimerstry-meddelandet högst 250 ord (gd:1228).
+**Beslut:** (M)Chimerstry-meddelandet är fritext, högst 250 ord (gd:1219). Wait and Strike är borttagen ur motorn, se K20.
 
 ## K18. Standardregister
 **Beslut:** `resolveRound`, `submitActions` och `analyzeSubmission` använder `ACTION_CATALOG` om inget register skickas in. `SKELETON_ACTIONS` finns kvar för rondens tester.
 
 ## K19. Archon Movement
 **Beslut:** Ett val: en stad högst två steg bort ("move to an adjacent city, then they may move again").
+
+## K20. Actions som kräver GM är borttagna
+**Status:** ✅ Beslutat av Gustaf 2026-11-19: actions som kräver manuell input från GM listas som not-fixed och tas bort ur motorn. Definition of done för motorn v1 är att alla actions löses automatiskt.
+**Beslut:** Wait and Strike (vampyr och Harpy), Dementation, (M) Dementation, Investigate, Investigate Eye, Troublemaker, Orders from the Top, Crown of Malkavs action och zombiens Hunt for Me är borttagna. Listan, skälen och gränsfallen står i [`docs/engine/not-fixed-actions.md`](../engine/not-fixed-actions.md).

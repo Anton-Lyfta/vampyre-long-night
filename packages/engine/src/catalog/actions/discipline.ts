@@ -178,22 +178,7 @@ export const DISCIPLINE_ACTIONS: ActionDefinition[] = [
     cost: 15,
     params: [textParam('message', 'Meddelande till Information Highway', 250)],
   }),
-  // --- Dementation
-  disc('dementation', B, { id: 'dementation', name: 'Dementation', stealth: 'undetectable', cost: 0, trifle: true }),
-  disc('dementation', M, {
-    id: 'dementation_m',
-    name: '(M) Dementation',
-    stealth: 3,
-    cost: 10,
-    params: [
-      playerParam('target', 'Vampyr'),
-      choiceParam('forced', 'Tvingad action', [
-        ['move', 'Move'],
-        ['bleed', 'Bleed'],
-        ['investigate', 'Investigate'],
-      ]),
-    ],
-  }),
+  // Dementation och (M) Dementation kräver GM och är borttagna (docs/engine/not-fixed-actions.md).
   // --- Dominate
   disc('dominate', B, {
     id: 'dominate',

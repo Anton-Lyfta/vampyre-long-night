@@ -1,5 +1,5 @@
 /**
- * Minion actions (gd:221–358) och Vestment of Vileness-zombiens Hunt for Me (C13).
+ * Minion actions (gd:221–358). Wait and Strike, Investigate Eye och zombiens Hunt for Me är borttagna (docs/engine/not-fixed-actions.md).
  */
 import type { MinionType } from '../../state/enums.js';
 import type { ActionDefinition } from '../../round/actions.js';
@@ -16,7 +16,6 @@ import {
   ownMinion,
   playerParam,
   sailDestinations,
-  textParam,
 } from '../options.js';
 
 const minion = (types: MinionType[], d: Omit<Def, 'category' | 'performer' | 'minionTypes'>): ActionDefinition =>
@@ -86,13 +85,6 @@ export const MINION_ACTIONS: ActionDefinition[] = [
   }),
   // --- Harpy
   minion(['harpy'], {
-    id: 'harpy_wait_and_strike',
-    name: 'Wait and Strike',
-    stealth: 2,
-    cost: 0,
-    params: [textParam('condition', 'Villkor', 50)],
-  }),
-  minion(['harpy'], {
     id: 'suicide_mission',
     name: 'Suicide Mission',
     stealth: -2,
@@ -101,27 +93,6 @@ export const MINION_ACTIONS: ActionDefinition[] = [
   }),
   minion(['harpy'], { id: 'guard_the_master', name: 'Guard the Master', stealth: 1, cost: 10 }),
   // --- Eye
-  minion(['eye'], {
-    id: 'investigate_eye',
-    name: 'Investigate Eye',
-    stealth: 2,
-    cost: 10,
-    params: (ctx) => [
-      { key: 'feature', label: 'Problem eller special i minionens stad', kind: 'feature', options: (c) => cityFeatures(c, here(c), 'both') },
-      {
-        key: 'questions',
-        label: `Frågor (${Math.min(4, level(ctx))})`,
-        kind: 'choice',
-        multiple: { min: Math.min(4, level(ctx)), max: Math.min(4, level(ctx)) },
-        options: () => [
-          { value: 'origin', label: 'Vad är ursprunget?' },
-          { value: 'how', label: 'Hur kan jag göra det värre eller bättre?' },
-          { value: 'who', label: 'Vilka andra har interagerat med det?' },
-          { value: 'more', label: 'Finns det mer att veta?' },
-        ],
-      },
-    ],
-  }),
   minion(['eye'], { id: 'hide_and_spy', name: 'Hide and Spy', stealth: 1, cost: 0 }),
   minion(['eye'], {
     id: 'keep_an_eye_on_them',
@@ -174,15 +145,5 @@ export const MINION_ACTIONS: ActionDefinition[] = [
   minion(['archon'], { id: 'sabbat_interrogations', name: 'Sabbat Interrogations', stealth: 0, cost: 20 }),
   minion(['archon'], { id: 'the_masters_will', name: "The Master's Will", stealth: 0, cost: 30 }),
   // --- Zombie (Vestment of Vileness)
-  define({
-    id: 'hunt_for_me',
-    name: 'Hunt for Me',
-    category: 'minion',
-    performer: 'minion',
-    stealth: 1,
-    cost: 0,
-    zombie: true,
-    requires: { zombieOnly: true },
-  }),
 ];
 
