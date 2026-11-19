@@ -4,7 +4,7 @@
  */
 import { DISCIPLINES, type Discipline, type DisciplineLevel } from '../../state/enums.js';
 import type { ActionDefinition } from '../../round/actions.js';
-import type { CityId, MinionId } from '../../state/ids.js';
+import type { MinionId } from '../../state/ids.js';
 import type { CatalogContext, ParamSpec } from '../types.js';
 import { define, movesTo, type Def } from '../define.js';
 import {
@@ -12,7 +12,6 @@ import {
   choiceParam,
   citiesAdjacentTo,
   citiesWithin,
-  cityById,
   cityParam,
   allCities,
   here,
@@ -24,7 +23,6 @@ import {
   othersMinions,
   playerParam,
   strParam,
-  textParam,
   vampires,
 } from '../options.js';
 import { STAT_CHOICES } from './personal.js';
@@ -151,33 +149,7 @@ export const DISCIPLINE_ACTIONS: ActionDefinition[] = [
     params: [cityParam('to', 'Stad högst 3 steg bort', (ctx) => citiesWithin(ctx, here(ctx), 3))],
     moves: movesTo(),
   }),
-  // --- Chimerstry
-  disc('chimerstry', B, {
-    id: 'chimerstry',
-    name: 'Chimerstry',
-    stealth: 2,
-    cost: 10,
-    trifle: true,
-    params: [
-      cityParam('city', 'Grannstad', (ctx) => citiesAdjacentTo(ctx, here(ctx))),
-      {
-        key: 'target',
-        label: 'Vampyr (inte stadens controller)',
-        kind: 'player',
-        options: (ctx) => {
-          const controller = cityById(ctx.view, strParam(ctx, 'city') as CityId)?.controllerId ?? null;
-          return vampires(ctx, { includeSelf: true }).filter((o) => o.value !== controller);
-        },
-      },
-    ],
-  }),
-  disc('chimerstry', M, {
-    id: 'chimerstry_m',
-    name: '(M) Chimerstry',
-    stealth: 2,
-    cost: 15,
-    params: [textParam('message', 'Meddelande till Information Highway', 250)],
-  }),
+  // Chimerstry och (M) Chimerstry byggs om och är borttagna (docs/engine/not-fixed-actions.md).
   // Dementation och (M) Dementation kräver GM och är borttagna (docs/engine/not-fixed-actions.md).
   // --- Dominate
   disc('dominate', B, {

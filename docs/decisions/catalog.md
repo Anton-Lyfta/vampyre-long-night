@@ -87,4 +87,4 @@ Se BACKLOG.
 
 ## K20. Actions som kräver GM är borttagna
 **Status:** ✅ Beslutat av Gustaf 2026-11-19: actions som kräver manuell input från GM listas som not-fixed och tas bort ur motorn. Definition of done för motorn v1 är att alla actions löses automatiskt.
-**Beslut:** Wait and Strike (vampyr och Harpy), Dementation, (M) Dementation, Investigate, Investigate Eye, Troublemaker, Orders from the Top, Crown of Malkavs action och zombiens Hunt for Me är borttagna. Listan, skälen och gränsfallen står i [`docs/engine/not-fixed-actions.md`](../engine/not-fixed-actions.md).
+**Beslut:** Wait and Strike (vampyr och Harpy), Dementation, (M) Dementation, Investigate, Investigate Eye, Troublemaker, Orders from the Top, Crown of Malkavs action och zombiens Hunt for Me är borttagna. Gustaf 2026-11-19: även Recruit an Archon (missions är borttagna ur spelet), Chimerstry och (M) Chimerstry tas bort och byggs om. Listan, skälen och gränsfallen står i [`docs/engine/not-fixed-actions.md`](../engine/not-fixed-actions.md).

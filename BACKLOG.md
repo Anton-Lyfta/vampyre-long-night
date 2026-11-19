@@ -53,4 +53,5 @@ Designern är inte tillgänglig live (Gustaf 2026-11-19). Motorn bygger på det 
 - [ ] **Unresolved: Thaumaturgy bas (K10).** Får man ge vilken disciplin som helst, eller bara en man själv har? Provisoriskt vilken som helst.
 - [ ] **Unresolved: upprepade val (K11).** Får Anarch Revolt, Build on the Master's Kingdom och Organize Resistance välja samma effekt flera gånger? Provisoriskt ja.
 - [ ] **Unresolved: not-fixed-actions** (`docs/engine/not-fixed-actions.md`): Wait and Strike, Dementation, (M) Dementation, Investigate, Investigate Eye, Troublemaker, Orders from the Top, Crown of Malkav och Hunt for Me ska byggas om så att de kan lösas utan GM.
-- [ ] **Unresolved: Justicar-missions** saknar källa när Orders from the Top är borttagen (påverkar Recruit an Archon, Archon-loyalty, Justicar-VP).
+- [ ] **Unresolved: missions är borttagna ur spelet** (Gustaf 2026-11-19). Recruit an Archon, Archon-loyalty (gd:332) och Justicar-VP behöver nya regler.
+- [ ] **Unresolved: Chimerstry och (M) Chimerstry** byggs om.

@@ -335,20 +335,6 @@ const CAMARILLA: ActionDefinition[] = [
     maxPerRound: 1,
     params: [playerParam('target', 'Prince eller Baron i samma stad', { titles: ['prince', 'baron'] })],
   }),
-  define({
-    id: 'recruit_an_archon',
-    name: 'Recruit an Archon',
-    category: 'faction',
-    performer: 'vampire',
-    stealth: 1,
-    cost: ({ content, action }) => {
-      const l = action.params?.level;
-      return typeof l === 'number' ? (content.minionTypes.archon.recruitCost[l - 1] ?? 0) : 0;
-    },
-    titles: ['justicar'],
-    // Kräver en avklarad mission denna rond; det avgörs vid upplösning.
-    params: [{ key: 'level', label: 'Level', kind: 'number', range: () => ({ min: 1, max: 3, step: 1 }) }],
-  }),
   // --- Inner Circle
   define({
     id: 'bottomless_wealth_of_the_camarilla',

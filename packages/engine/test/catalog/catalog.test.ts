@@ -416,6 +416,9 @@ describe('aktioner som kräver GM finns inte i motorn (docs/engine/not-fixed-act
       'orders_from_the_top',
       'hunt_for_me',
       'artifact_crown_of_malkav',
+      'recruit_an_archon',
+      'chimerstry',
+      'chimerstry_m',
     ];
     expect(notFixed.filter((id) => id in ACTION_CATALOG)).toEqual([]);
   });

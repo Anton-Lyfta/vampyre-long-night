@@ -21,16 +21,17 @@ Testet `test/catalog/catalog.test.ts` ("aktioner som kräver GM finns inte i mot
 | Crown of Malkav | Artefakt | gd:418 | Ger en slumpvis skärmdump från en chatt när någon använder Dementation. Artefakten finns kvar (minionbonusen +1 Intercept), men har ingen action. |
 | Hunt for Me | Zombie (Vestment of Vileness) | gd:402 | Actionen nämns men definieras aldrig i regelboken. GM fick avgöra vad den gör. Zombien kan fortfarande göra Move. |
 
-## Gränsfall (kvar i motorn)
+## Byggs om (borttagna på Gustafs begäran 2026-11-19)
 
-| Action | Regel | Varför den får stå kvar | Vad som krävs |
+| Action | Typ | Regel | Varför |
 |---|---|---|---|
-| (M) Chimerstry | gd:1219 | Spelarens text (högst 250 ord) publiceras ordagrant; ingen bedömning. | Plattformen behöver ett publikt "information highway"-flöde som motorn kan skicka texten till (Part C #7). Annars är den också not-fixed. |
-| Recruit an Archon | gd:1041 | Själva actionen är automatisk. | Kräver en avklarad mission samma rond. Med Orders from the Top borttagen kan Justicars bara få missions på annat sätt (från en Inner Circle-medlem, gd:919), som inte finns i motorn än. Utan missions misslyckas actionen alltid. |
-| Search | gd:976 | "25 % chans att hitta en artefakt" och listan över vampyrer och minions går att räkna. | Inget. |
+| Recruit an Archon | Justicar | gd:1041 | Missions är borttagna ur spelet, och actionen kräver en avklarad mission. Byggs om. |
+| Chimerstry | Discipline | gd:1217 | Byggs om av designern. |
+| (M) Chimerstry | Discipline | gd:1219 | Byggs om av designern (krävde dessutom ett "information highway"-flöde). |
 
 ## Följder
 
 - Disciplinen **Dementation** har inga actions i motorn just nu. Malkavians och andra med Dementation behåller disciplinen, men kan inte använda den förrän designern byggt om actionerna.
-- **Justicar-missions** saknar källa i motorn (Orders from the Top är borttagen). Det påverkar Recruit an Archon, Archons loyalty counters (gd:332) och Justicars VP.
+- **Missions är borttagna ur spelet** (Gustaf 2026-11-19). Archons loyalty counters (gd:332) och Justicars VP från missions behöver nya regler.
+- Disciplinen **Chimerstry** har inga actions i motorn just nu.
 - **Problem på städer** skapas inte längre av någon action (Troublemaker är borttagen). Problem kan fortfarande uppstå av andra regler, t.ex. stability 0 (gd:492), som också behöver en problemtabell.
