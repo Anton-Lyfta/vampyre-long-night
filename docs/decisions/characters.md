@@ -1,24 +1,23 @@
 # Beslut: karaktärsskapande, backlog och anslutning till kampanj
 
 **Datum:** 2026-11-18
-**Status:** K1 och K2 kommer från Gustaf. Övriga är Claudes provisoriska standardval; ändra raden här och koden i `packages/engine/src/characters/` om du vill annorlunda.
+**Status:** K1, K2, K12 och K14 kommer från Gustaf (K12 och K14 ändrade 2026-11-19). Övriga är Claudes provisoriska standardval; ändra raden här och koden i `packages/engine/src/characters/` om du vill annorlunda.
 **Plan:** [`docs/engine/character-creation-plan.md`](../engine/character-creation-plan.md) · **Kod:** `packages/engine/src/characters/`
 
 ## Snabböversikt: de beslut som påverkar spelet mest
 
 | # | Fråga | Valt |
 |---|---|---|
-| K1 | Vem väljer titel? | **Spelaren** (Gustaf). Avviker från gd:658 där GM delar ut titeln. |
+| K1 | Vem väljer titel? | **GM** per kampanj (gd:658). I backloggen väljer spelaren fritt, men bara en karaktär med GM:s titel kan användas. |
 | K2 | Justicar? | Inte valbar i V1 (Gustaf). Kan slås på per kampanj. |
 | K7 | Vilka discipliner får bemästras? | Alla som karaktären har efter klan, startuppgradering och EXP-köp. |
-| K12 | Finns tak per titel i en kampanj? | Valfritt, standard obegränsat. **Öppen fråga**, se nedan. |
-| K14 | Ring of Tremere som startartefakt | Binds seedat till en disciplin karaktären saknar. Provisoriskt. |
+| K12 | Hur får spelaren sin titel i en kampanj? | GM tilldelar titel (och förklädnad). Befintlig karaktär måste matcha, annars skapas en ny. |
+| K14 | Ring of Tremere | Avstängd: ligger inte i slumppoolen förrän vi har ett sätt att välja disciplin. |
 
 ---
 
-## K1. Spelaren väljer titel
-**Beslut:** Titeln är en del av karaktärsbygget och väljs av spelaren.
-**Avvikelse:** gd:658 och SPEC A3 säger att GM delar ut titel (och stad). Gustaf har bestämt att spelaren väljer. Startstaden placeras fortfarande av GM vid kampanjstart (K13), eftersom en backlog-karaktär inte vet vilken karta den hamnar på.
+## K1. Titeln i backloggen och i kampanjen
+**Beslut (Gustaf 2026-11-19):** I backloggen väljer spelaren titel fritt, eftersom karaktären inte hör till någon kampanj. I en kampanj bestämmer GM vilken titel varje spelare får (gd:658), och spelaren kan bara använda en karaktär med just den titeln (K12). Startstaden placeras av GM vid kampanjstart (K13).
 
 ## K2. Justicar finns inte i V1
 **Beslut:** `V1_CREATABLE_TITLES = inner_circle, prince, baron, archbishop`. Justicars definition ligger kvar i content och kan tillåtas med `allowedTitles` (kampanj) eller `CharacterRulesOptions` (validering).
@@ -56,16 +55,14 @@
 **Motivering:** Kampanjer är isolerade (SPEC B5). En karaktär i backloggen är en mall, inte en levande vampyr.
 
 ## K12. Lobbyn
-**Beslut:** `joinCampaign` tar `{ kind: 'existing', characterId }` eller `{ kind: 'new', build }`. En ny karaktär sparas också i backloggen. Regler: en plats per användare, högst `maxPlayers` (20), titeln måste vara tillåten i kampanjen, och `titleLimits` (per sann titel) får inte överskridas. Standard är inga tak. `leaveCampaign` frigör platsen.
-**Öppen fråga:** Utan tak kan alla välja samma titel. Med tak på Archbishop kan en spelare som nekas räkna ut hur många Sabbat som finns. Behöver Gustafs beslut om fördelning.
+**Beslut (Gustaf 2026-11-19):** GM ger varje spelare en titel med `assignTitle` (för Archbishop också förklädnaden, Prince eller Baron). Kampanjens tak per titel hanteras alltså av GM och modelleras inte i motorn. `joinCampaign` tar `{ kind: 'existing', characterId }` eller `{ kind: 'new', build }`: en befintlig karaktär måste ha exakt den tilldelade titeln och förklädnaden, annars får spelaren skapa en ny. En ny karaktär sparas också i backloggen. `eligibleCharacters` listar backloggens karaktärer som passar. Övriga regler: en plats per användare, högst `maxPlayers` (20), och en spelare som redan gått med kan inte få en annan titel utan att först lämna (`leaveCampaign`).
 
 ## K13. Kampanjstart
 **Beslut:** `buildCampaignInput` tar lobbyn, en seed, kartan och GM:s placering per användare och ger `CreateGameInput` för `createGameState`. Stadstitlar (Prince, Baron, förklädd Archbishop) kontrollerar staden de placeras i, och stadsuppgraderingarna (+25 blood flow, +2 intercept, Anarch-specials) läggs på den. Två stadstitlar kan inte dela startstad. Player-id delas ut i anslutningsordning.
 **Ändring i delad kod:** `PlayerSetup.startingCityUpgrades` (valfritt) i `state/create.ts`; specials blir `CityFeature` med `data.origin = 'starting_upgrade'`.
 
-## K14. Ring of Tremere som startartefakt
-**Beslut:** Ringen kräver att man väljer disciplin när man får den (gd:420). Dras den som startartefakt binds den seedat till en disciplin karaktären saknar. Provisoriskt; bör bli spelarens val när plattformen har ett flöde för det.
-**Ändring i delad kod:** `validateState` tillåter nu en obunden Ring of Tremere i poolen eller i en stad (ingen har fått den än). Tidigare krävdes bunden disciplin överallt, vilket gjorde att ringen inte kunde ligga i poolen.
+## K14. Ring of Tremere är avstängd
+**Beslut (Gustaf 2026-11-19):** Ringen kräver att man väljer disciplin när man får den (gd:420), och det finns inget flöde för det än. Den har `inRandomPool: false` och kan inte dras som startartefakt eller ligga i en kampanjs pool (`buildCampaignInput` nekar den). Uppföljning i BACKLOG.md.
 
 ## Inte med än
 - Toreador-obsessionen (C8) dras inte vid start (som tidigare, S21).

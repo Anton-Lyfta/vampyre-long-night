@@ -8,7 +8,7 @@
 
 | Steg (gd:654–679, SPEC A3) | Regel | Hur motorn tar det |
 |---|---|---|
-| Titel | "given by the GM" (gd:658) | **Avvikelse:** spelaren väljer själv (Gustafs beslut). Justicar ej valbar i V1. Archbishop väljer förklädnad (Prince/Baron) och får förklädnadens paket (SPEC A3). |
+| Titel | "given by the GM" (gd:658) | GM tilldelar titel per kampanj; i backloggen väljer spelaren fritt (K1, K12). Justicar ej valbar i V1. Archbishop har förklädnad (Prince/Baron) och får förklädnadens paket (SPEC A3). |
 | Klan | valfri av 14, ger 3 discipliner, boon och curse | `CharacterBuild.clan`; disciplinerna från `content.clans`. |
 | Startminions | titelns paket, varje minion namnges | Paketindex + ett val (typ, namn) per plats. |
 | Bemästra discipliner | titeln anger antal | Exakt N discipliner som karaktären har. |
@@ -28,7 +28,7 @@ En backlog-karaktär ska kunna återanvändas i flera kampanjer, så den får in
 
 | Hör till karaktären (backlog) | Hör till kampanjen (vid start) |
 |---|---|
-| namn, koncept, klan, titel, förklädnad, minionval och namn, bemästrade discipliner, startuppgraderingar med underval, EXP-köp | startstad/plats (GM), vilka artefakter som dras, Ring of Tremeres disciplin, player-id |
+| namn, koncept, klan, titel, förklädnad, minionval och namn, bemästrade discipliner, startuppgraderingar med underval, EXP-köp | titel från GM, startstad/plats (GM), vilka artefakter som dras, player-id |
 
 Stadsuppgraderingar (+25 blood flow, +2 intercept, Anarch-specials) väljs på karaktären men appliceras på den stad GM placerar karaktären i.
 
@@ -39,7 +39,7 @@ Ny mapp `packages/engine/src/characters/`, ren TypeScript utan I/O, samma regler
 1. **`types.ts`** — `CharacterBuild` (spelarens val), `StartingUpgradeChoice`, `ExpPurchase`, `CreationIssue`.
 2. **`build.ts`** — `validateCharacterBuild(build, content, options)` returnerar alla fel (för live-feedback i UI). `deriveCharacter` räknar fram det färdiga resultatet (blood, discipliner, stat-bonusar per källa, minions, antal slumpartefakter, VP, Royal Privileges, stadsuppgraderingar, spenderad EXP). `startingPackageFor` ger UI:t rätt paket (förklädnadens för Archbishop).
 3. **`backlog.ts`** — `CharacterBacklog` per användare: `addCharacter`, `updateCharacter`, `removeCharacter`. Bara giltiga karaktärer sparas; utkast är UI-state.
-4. **`lobby.ts`** — `CampaignLobby` före start: `joinCampaign` med `{ kind: 'existing', characterId }` eller `{ kind: 'new', build }` (ny karaktär sparas också i backloggen), `leaveCampaign`. Platsen får en **kopia** av karaktären.
+4. **`lobby.ts`** — `CampaignLobby` före start: `assignTitle` (GM), `joinCampaign` med `{ kind: 'existing', characterId }` (måste ha GM:s titel) eller `{ kind: 'new', build }` (ny karaktär sparas också i backloggen), `leaveCampaign`. Platsen får en **kopia** av karaktären.
 5. **`setup.ts`** — `buildCampaignInput(lobby, placements, …)` gör om platserna till `CreateGameInput` för `createGameState`, drar startartefakter seedat och returnerar mappningen användare → `PlayerId`.
 
 Ändringar i delade filer (hålls små, vy-tråden arbetar parallellt):

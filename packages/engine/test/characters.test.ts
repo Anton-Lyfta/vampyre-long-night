@@ -3,6 +3,8 @@ import {
   DEFAULT_CONTENT,
   TEST_MAP,
   addCharacter,
+  assignTitle,
+  eligibleCharacters,
   buildCampaignInput,
   canonicalJson,
   createGameState,
@@ -23,7 +25,9 @@ import {
   type CharacterBuild,
   type CharacterId,
   type CityId,
+  type DisguiseTitle,
   type PlayerId,
+  type Title,
 } from '../src/index.js';
 
 const content = DEFAULT_CONTENT;
@@ -361,10 +365,39 @@ function backlogWith(owner: string, ...builds: CharacterBuild[]): { backlog: Cha
   return { backlog, ids };
 }
 
+const assign = (lobby: CampaignLobby, userId: string, title: Title, disguise: DisguiseTitle | null = null): CampaignLobby => {
+  const r = assignTitle(lobby, userId, { title, disguise });
+  if (!r.ok) throw new Error(JSON.stringify(r.issues));
+  return r.lobby;
+};
+
+describe('assignTitle', () => {
+  it('nekar titlar kampanjen inte använder och felaktig förklädnad', () => {
+    const lobby = createLobby('c1');
+    const msg = (title: Title, disguise: DisguiseTitle | null) => {
+      const r = assignTitle(lobby, 'user-a', { title, disguise });
+      return r.ok ? null : r.issues[0]?.message;
+    };
+    expect(msg('justicar', null)).toBe('titeln justicar används inte i kampanjen');
+    expect(msg('archbishop', null)).toBe('en Archbishop måste få förklädnad (Prince eller Baron)');
+    expect(msg('prince', 'baron')).toBe('bara en Archbishop har förklädnad');
+    expect(msg('archbishop', 'prince')).toBeNull();
+  });
+
+  it('kan inte byta titel på en spelare som redan gått med med en annan titel', () => {
+    const lobby = assign(createLobby('c1'), 'user-a', 'prince');
+    const r = joinCampaign(lobby, emptyBacklog('user-a'), { kind: 'new', build: PRINCE }, content);
+    if (!r.ok) throw new Error('join');
+    expect(assignTitle(r.lobby, 'user-a', { title: 'baron', disguise: null }).ok).toBe(false);
+    expect(assignTitle(leaveCampaign(r.lobby, 'user-a'), 'user-a', { title: 'baron', disguise: null }).ok).toBe(true);
+  });
+});
+
 describe('joinCampaign', () => {
-  it('går med med en befintlig karaktär och kopierar bygget', () => {
+  it('går med med en befintlig karaktär med rätt titel och kopierar bygget', () => {
     const { backlog, ids } = backlogWith('user-a', PRINCE);
-    const r = joinCampaign(createLobby('c1'), backlog, { kind: 'existing', characterId: ids[0]! }, content);
+    const lobby = assign(createLobby('c1'), 'user-a', 'prince');
+    const r = joinCampaign(lobby, backlog, { kind: 'existing', characterId: ids[0]! }, content);
     if (!r.ok) throw new Error(JSON.stringify(r.issues));
     expect(r.backlog).toBe(backlog);
     expect(r.seat).toEqual({ userId: 'user-a', characterId: 'character-1', characterVersion: 1, build: PRINCE });
@@ -375,32 +408,66 @@ describe('joinCampaign', () => {
     expect(r.lobby.seats[0]?.build.name).toBe('Prince Victor');
   });
 
+  it('nekar en befintlig karaktär med fel titel; spelaren får skapa en ny', () => {
+    const { backlog, ids } = backlogWith('user-a', PRINCE, BARON);
+    const lobby = assign(createLobby('c1'), 'user-a', 'baron');
+    expect(eligibleCharacters(lobby, backlog).map((c) => c.id)).toEqual([ids[1]]);
+
+    const wrong = joinCampaign(lobby, backlog, { kind: 'existing', characterId: ids[0]! }, content);
+    expect(!wrong.ok && wrong.issues[0]?.message).toBe(
+      'karaktären är prince, men du har fått baron i kampanjen: välj en annan eller skapa en ny',
+    );
+    const fresh = joinCampaign(lobby, backlog, { kind: 'new', build: { ...BARON, name: 'Ny baron' } }, content);
+    expect(fresh.ok).toBe(true);
+  });
+
+  it('kräver samma förklädnad för en Archbishop', () => {
+    const { backlog, ids } = backlogWith('user-a', ARCHBISHOP);
+    const asPrince = assign(createLobby('c1'), 'user-a', 'archbishop', 'prince');
+    expect(eligibleCharacters(asPrince, backlog)).toEqual([]);
+    const r = joinCampaign(asPrince, backlog, { kind: 'existing', characterId: ids[0]! }, content);
+    expect(!r.ok && r.issues[0]?.message).toBe(
+      'karaktären är archbishop (som baron), men du har fått archbishop (som prince) i kampanjen: välj en annan eller skapa en ny',
+    );
+    const asBaron = assign(createLobby('c1'), 'user-a', 'archbishop', 'baron');
+    expect(joinCampaign(asBaron, backlog, { kind: 'existing', characterId: ids[0]! }, content).ok).toBe(true);
+  });
+
+  it('nekar en ny karaktär med fel titel', () => {
+    const lobby = assign(createLobby('c1'), 'user-b', 'baron');
+    const r = joinCampaign(lobby, emptyBacklog('user-b'), { kind: 'new', build: PRINCE }, content);
+    expect(!r.ok && r.issues[0]?.message).toBe('karaktären måste vara baron, inte prince');
+  });
+
   it('går med med en ny karaktär som också sparas i backloggen', () => {
-    const r = joinCampaign(createLobby('c1'), emptyBacklog('user-b'), { kind: 'new', build: BARON }, content);
+    const lobby = assign(createLobby('c1'), 'user-b', 'baron');
+    const r = joinCampaign(lobby, emptyBacklog('user-b'), { kind: 'new', build: BARON }, content);
     if (!r.ok) throw new Error(JSON.stringify(r.issues));
     expect(listCharacters(r.backlog).map((c) => c.build.name)).toEqual(['Baron Jack']);
     expect(r.seat.characterId).toBe('character-1');
   });
 
-  it('nekar ogiltig ny karaktär utan att ändra backloggen', () => {
-    const r = joinCampaign(createLobby('c1'), emptyBacklog('user-b'), { kind: 'new', build: { ...BARON, name: '' } }, content);
+  it('nekar ogiltig ny karaktär', () => {
+    const lobby = assign(createLobby('c1'), 'user-b', 'baron');
+    const r = joinCampaign(lobby, emptyBacklog('user-b'), { kind: 'new', build: { ...BARON, name: '' } }, content);
     expect(r.ok).toBe(false);
   });
 
-  it('nekar okänd karaktär, dubbel anslutning, full kampanj och full titel', () => {
+  it('nekar spelare utan titel, okänd karaktär, dubbel anslutning och full kampanj', () => {
     const { backlog, ids } = backlogWith('user-a', PRINCE);
-    const lobby = createLobby('c1', { titleLimits: { prince: 1 }, maxPlayers: 2 });
+    let lobby = createLobby('c1', { maxPlayers: 2 });
+    const noTitle = joinCampaign(lobby, backlog, { kind: 'existing', characterId: ids[0]! }, content);
+    expect(!noTitle.ok && noTitle.issues[0]?.message).toBe('spelaren har inte fått någon titel i kampanjen');
+
+    lobby = assign(assign(assign(lobby, 'user-a', 'prince'), 'user-b', 'baron'), 'user-c', 'inner_circle');
     expect(joinCampaign(lobby, backlog, { kind: 'existing', characterId: 'character-9' as CharacterId }, content).ok).toBe(
       false,
     );
 
     const first = joinCampaign(lobby, backlog, { kind: 'existing', characterId: ids[0]! }, content);
     if (!first.ok) throw new Error('join');
-    const again = joinCampaign(first.lobby, first.backlog, { kind: 'new', build: BARON }, content);
+    const again = joinCampaign(first.lobby, first.backlog, { kind: 'new', build: PRINCE }, content);
     expect(!again.ok && again.issues[0]?.message).toBe('spelaren är redan med i kampanjen');
-
-    const otherPrince = joinCampaign(first.lobby, emptyBacklog('user-b'), { kind: 'new', build: PRINCE }, content);
-    expect(!otherPrince.ok && otherPrince.issues[0]?.message).toBe('kampanjen har inga lediga platser för prince');
 
     const second = joinCampaign(first.lobby, emptyBacklog('user-b'), { kind: 'new', build: BARON }, content);
     if (!second.ok) throw new Error('join');
@@ -408,14 +475,9 @@ describe('joinCampaign', () => {
     expect(!third.ok && third.issues[0]?.message).toBe('kampanjen är full');
   });
 
-  it('nekar titlar kampanjen inte tillåter', () => {
-    const lobby = createLobby('c1', { allowedTitles: ['prince', 'baron'] });
-    const r = joinCampaign(lobby, emptyBacklog('user-a'), { kind: 'new', build: INNER_CIRCLE }, content);
-    expect(!r.ok && r.issues[0]?.message).toBe('titeln inner_circle går inte att välja');
-  });
-
   it('leaveCampaign frigör platsen men behåller karaktären i backloggen', () => {
-    const r = joinCampaign(createLobby('c1'), emptyBacklog('user-a'), { kind: 'new', build: PRINCE }, content);
+    const lobby = assign(createLobby('c1'), 'user-a', 'prince');
+    const r = joinCampaign(lobby, emptyBacklog('user-a'), { kind: 'new', build: PRINCE }, content);
     if (!r.ok) throw new Error('join');
     expect(leaveCampaign(r.lobby, 'user-a').seats).toEqual([]);
     expect(listCharacters(r.backlog)).toHaveLength(1);
@@ -431,6 +493,7 @@ function fullLobby(): CampaignLobby {
     ['user-arch', ARCHBISHOP],
   ];
   for (const [user, build] of entries) {
+    lobby = assign(lobby, user, build.title, build.disguise);
     const r = joinCampaign(lobby, emptyBacklog(user), { kind: 'new', build }, content);
     if (!r.ok) throw new Error(JSON.stringify(r.issues));
     lobby = r.lobby;
@@ -501,19 +564,15 @@ describe('buildCampaignInput', () => {
     expect(canonicalJson(a)).toBe(canonicalJson(b));
   });
 
-  it('binder Ring of Tremere till en disciplin karaktären saknar', () => {
+  it('drar aldrig Ring of Tremere och nekar den i en egen pool (K14)', () => {
+    const { input } = setup();
+    expect(Object.values(input.artifactPool ?? {}).some((a) => a.definition === 'ring_of_tremere')).toBe(false);
+    expect(input.players.flatMap((p) => p.artifacts ?? []).some((a) => a.definition === 'ring_of_tremere')).toBe(false);
     const r = buildCampaignInput(
       { lobby: fullLobby(), seed: 's', map: TEST_MAP, placements: PLACEMENTS, artifactKeys: ['ring_of_tremere', 'black_gloves', 'fog_flute'] },
       content,
     );
-    if (!r.ok) throw new Error(JSON.stringify(r.issues));
-    const all = r.value.input.players.flatMap((p) => p.artifacts ?? []);
-    expect(all).toHaveLength(3);
-    const ring = all.find((a) => a.definition === 'ring_of_tremere');
-    const owner = r.value.input.players.find((p) => p.artifacts?.includes(ring!));
-    expect(ring?.boundDiscipline).toBeDefined();
-    expect(owner?.disciplines[ring!.boundDiscipline!]).toBeUndefined();
-    expect(validateState(createGameState(r.value.input, content), content)).toEqual([]);
+    expect(!r.ok && r.issues[0]?.message).toBe('ring_of_tremere kan inte ligga i poolen än: valet av disciplin saknar flöde');
   });
 
   it('rapporterar när artefaktpoolen inte räcker', () => {

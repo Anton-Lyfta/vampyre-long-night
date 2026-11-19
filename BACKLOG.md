@@ -27,7 +27,5 @@ Sidofynd som inte hör till pågående scope. Skriv var fyndet gjordes.
 - [ ] Per-spelare-vyer ska filtrera `RoundResolution.events` (steg 4). Events saknar ännu `audience` (M18).
 
 ## Karaktärsskapande (hittat under `docs/decisions/characters.md`)
-- [ ] **Titelfördelning per kampanj** (K12): ska det finnas tak per titel, och hur undviker vi att ett tak på Archbishop avslöjar antalet Sabbat-spelare?
-- [ ] **Ring of Tremere som startartefakt** (K14): låt spelaren välja disciplin i stället för seedat val.
+- [ ] **Ring of Tremere är avstängd** (K14): den ligger inte i slumppoolen eftersom man ska välja disciplin när man får den (gd:420). Hitta ett sätt att hantera valet (startartefakt, Search, My treasure, stöld) och slå på den igen.
 - [ ] **Toreador-obsession** (C8) dras fortfarande inte vid kampanjstart.
-- [ ] **Regelboken säger att GM delar ut titel** (gd:658). Uppdatera när spelarvalet (K1) är bekräftat i designen.

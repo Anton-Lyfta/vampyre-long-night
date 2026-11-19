@@ -217,6 +217,8 @@ const DEFS: Readonly<Record<ArtifactKey, Def>> = {
     cost: null,
     stealth: null,
     minionBonus: { kind: 'bound_discipline_action' },
+    // Avstängd tills vi vet hur valet av disciplin ska göras när ringen dras (BACKLOG.md).
+    inRandomPool: false,
   },
   scepter_of_ventrue: {
     name: 'Scepter of Ventrue',

@@ -5,14 +5,13 @@
  * GM placerar varje karaktär i en stad. För stadstitlar (Prince, Baron,
  * förklädd Archbishop) blir staden också deras startstad. Startartefakter (titelns
  * plus My treasure) dras seedat ur kampanjens artefaktpool; resten av poolen
- * ligger kvar för senare dragningar.
+ * ligger kvar för senare dragningar. Ring of Tremere är avstängd (K14).
  */
 import { ARTIFACT_KEYS, requiresBoundDiscipline, type ArtifactKey } from '../content/artifacts.js';
 import type { Content } from '../content/index.js';
 import type { MapTemplate } from '../content/maps/types.js';
 import { createRng, deriveSeed } from '../rng.js';
 import type { ArtifactSetup, CreateGameInput, PlayerSetup } from '../state/create.js';
-import { DISCIPLINES } from '../state/enums.js';
 import { formatId, type PlayerId } from '../state/ids.js';
 import { deriveCharacter } from './build.js';
 import type { CampaignLobby } from './lobby.js';
@@ -58,7 +57,10 @@ export function buildCampaignInput(setup: CampaignSetupInput, content: Content):
   const deck = createRng(deriveSeed(setup.seed, 'creation', 'artifacts')).shuffle(
     setup.artifactKeys ?? ARTIFACT_KEYS.filter((k) => content.artifacts[k].inRandomPool),
   );
-  const bindRng = createRng(deriveSeed(setup.seed, 'creation', 'bound-discipline'));
+  // Artefakter som kräver ett val när man får dem (Ring of Tremere) kan inte dras än (K14).
+  for (const key of setup.artifactKeys ?? []) {
+    if (requiresBoundDiscipline(key)) add('artifactKeys', `${key} kan inte ligga i poolen än: valet av disciplin saknar flöde`);
+  }
 
   const players: PlayerSetup[] = [];
   const playerIds: Record<string, PlayerId> = {};
@@ -94,13 +96,7 @@ export function buildCampaignInput(setup: CampaignSetupInput, content: Content):
         add(`${path}.artifacts`, 'artefaktpoolen räcker inte till alla startartefakter');
         break;
       }
-      if (requiresBoundDiscipline(key)) {
-        // Ring of Tremere: en disciplin karaktären inte redan har (K14).
-        const missing = DISCIPLINES.filter((d) => c.disciplines[d] === undefined);
-        artifacts.push({ definition: key, boundDiscipline: bindRng.pick(missing.length > 0 ? missing : DISCIPLINES) });
-      } else {
-        artifacts.push({ definition: key });
-      }
+      artifacts.push({ definition: key });
     }
 
     players.push({
