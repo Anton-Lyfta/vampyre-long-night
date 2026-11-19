@@ -31,6 +31,15 @@ Om SPEC.md och game_design.txt säger emot varandra gäller game_design.txt, och
 - Sidofynd som inte hör till nuvarande scope går i `BACKLOG.md`, inte in i planen.
 - Spelmotorn ska vara deterministisk. Allt som regelboken lämnar åt GM:s bedömning ska lösas explicit och spåras i SPEC.md Part C.
 
+## Frågor till designern
+
+Vi har **ingen live-tillgång till spelets lead game designer**. Pausa inte arbetet för frågor som kräver designerns svar (regeltolkningar, balans, siffror som regelboken inte ger):
+1. Välj ett provisoriskt, spårbart standardval och bygg vidare på det.
+2. Skriv frågan under "Olösta designerfrågor" i `BACKLOG.md`, med ditt provisoriska val och var det finns i koden/besluten.
+3. Nämn frågan för Gustaf, men vänta inte på svar.
+
+Frågor om ren logik, kod och arkitektur kan Gustaf svara på direkt.
+
 ## Hemligheter
 
 Committa aldrig `.env`, Supabase-nycklar eller andra credentials.

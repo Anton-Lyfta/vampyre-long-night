@@ -2,6 +2,13 @@
 
 Sidofynd som inte hör till pågående scope. Skriv var fyndet gjordes.
 
+## Olösta designerfrågor (unresolved)
+
+Frågor som bara lead game designern kan svara på. Designern är inte tillgänglig live (se CLAUDE.md), så arbetet fortsätter med det provisoriska valet. Format: fråga, provisoriskt val, var det används.
+
+- [ ] **Röster för exponerad Sabbat/Archbishop i Vampiric Society.** Provisoriskt 0 (Archbishop-titelns värde i `content/titles.ts`). Används i `baseSocietyVotes`, beslut V18 i `docs/decisions/views.md`. — hittad under: kartvyn (PR #7)
+- [ ] **Röster för Anarch-titlar (Baron) i Vampiric Society.** Provisoriskt 0 (content), medan en Anarch utan titel har 1, vilket är bakvänt. Används i `baseSocietyVotes`, beslut V18. — hittad under: kartvyn (PR #7)
+
 ## Motorbeslut (hittat under `docs/engine/001_motorbeslut.md`)
 
 - [ ] **Kartdata saknas/motsägelsefull.** `docs/prototype/plans/001_map_improvement.md` listar 37 adjacency-par men säger 36; `007_campaign_setup.md` säger 34. Startvärden per stad (blood flow, stability, MS, intercept) och sea region per hamn finns inte i repot (prototypens `seed.js` följde inte med). Måste bekräftas med GM innan British Isles-kartan blir standardmall (SPEC Part C #14). — hittad under: docs/engine/001_motorbeslut.md
@@ -32,7 +39,7 @@ Sidofynd som inte hör till pågående scope. Skriv var fyndet gjordes.
 - [ ] **Vy av en pausad strid:** `RoundResolution` under `awaitingCombat` har ingen spelarvy. Byggs med combat.
 - [ ] **Avslöjande aktioner:** Investigate, Search, Auspex m.fl. ska kunna göra dolda fält synliga för en spelare. Behöver en modell för "känd information" per spelare när aktionerna byggs.
 - [ ] **Kartan och strider/mål:** den som ser X attackera Y i A, eller är part i en strid, får inte Y/motståndaren på kartan än (V17). Bestäm när strid och Attack byggs. — hittad under: kartvyn (V15–V19)
-- [ ] **Vampiric Society-röster (fråga till designern):** röster för exponerad Archbishop/Sabbat, och för Anarch-titlar (Baron har 0 i content men en Anarch utan titel har 1). Debatterna (V9) heter fortfarande Ivory Tower i koden och ska byggas om till Vampiric Society med alla sekter. — hittad under: kartvyn (V18)
+- [ ] **Debatterna heter fortfarande Ivory Tower** i koden (V9, `content/titles.ts`) och ska byggas om till Vampiric Society där alla sekter röstar. Röstfrågorna står under "Olösta designerfrågor". — hittad under: kartvyn (V18)
 - [ ] **Move/Sail behöver `destination` och `targets`** när de byggs på riktigt, annars ser destinationens controller inte ankomsten och kartan placerar inte den resande (V16). — hittad under: kartvyn
 - [ ] **Motsägelse om controller-sikt:** gd:115 säger "target and originate", gd:498 "against or in". Tolkat som samma sak (startstad + målstäder).
 

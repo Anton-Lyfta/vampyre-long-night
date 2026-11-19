@@ -93,7 +93,7 @@ Senaste observationen per subjekt gäller. Egen vampyr och egna minions syns all
 `blood`, `vp`, antal egna artefakter (även de egna minions bär), antal egna minions och `votes`. Vampyrpanelen (namn, titel, Strength/Stealth/Intercept) finns redan i `me`.
 
 **Röster (Gustaf 2026-11-19):** Ivory Tower byggs om till **Vampiric Society**, där alla sekter röstar. `baseSocietyVotes` (och `me.societyVotes`) ger röster efter **skenbar** titel för alla, så en dold Sabbat röstar som rollen den låtsas vara. Utan titel: 1. Utan Buy Votes (köps per rond i aktionslistan).
-**Öppna frågor till designern** (står också i `BACKLOG.md`):
+**Öppna frågor till designern** (under "Olösta designerfrågor" i `BACKLOG.md`):
 - Hur många röster har en **exponerad** Archbishop/Sabbat? Provisoriskt 0 (Archbishop-titelns värde i content).
 - Hur många röster har **Anarch-titlar** (Baron)? Provisoriskt 0 (content), medan en Anarch utan titel har 1. Det blir bakvänt och bör rättas i `content/titles.ts`.
 
