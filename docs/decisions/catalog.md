@@ -88,3 +88,7 @@ Se BACKLOG.
 ## K20. Actions som kräver GM är borttagna
 **Status:** ✅ Beslutat av Gustaf 2026-11-19: actions som kräver manuell input från GM listas som not-fixed och tas bort ur motorn. Definition of done för motorn v1 är att alla actions löses automatiskt.
 **Beslut:** Wait and Strike (vampyr och Harpy), Dementation, (M) Dementation, Investigate, Investigate Eye, Troublemaker, Orders from the Top, Crown of Malkavs action och zombiens Hunt for Me är borttagna. Gustaf 2026-11-19: även Recruit an Archon (missions är borttagna ur spelet), Chimerstry och (M) Chimerstry tas bort och byggs om. Listan, skälen och gränsfallen står i [`docs/engine/not-fixed-actions.md`](../engine/not-fixed-actions.md).
+
+## K21. Destination härleds från moves
+**Beslut:** Kartvyns `ActionDefinition.destination` (V16) sätts automatiskt för varje aktion i `ACTION_CATALOG` som har `moves`, så målval i utkastet och kartan vid upplösning alltid ger samma stad (`src/catalog/destination.ts`). Vid upplösning räknas den från spelarens vy just då. Second Tradition har en egen `destination`: målets verkliga stad vid upplösning (i utkastet är den okänd, K4).
+**Motivering:** Annars skulle varje förflyttning beskrivas två gånger och kunna glida isär.

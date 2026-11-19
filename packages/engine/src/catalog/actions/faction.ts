@@ -2,7 +2,7 @@
  * Faction actions: gemensamma, Camarilla, Anarch och Sabbat (gd:962–1139).
  */
 import type { ActionDefinition } from '../../round/actions.js';
-import type { CityId, MinionId } from '../../state/ids.js';
+import type { CityId, MinionId, PlayerId } from '../../state/ids.js';
 import type { ParamSpec } from '../types.js';
 import { define, movesTo } from '../define.js';
 import {
@@ -229,6 +229,12 @@ const CAMARILLA: ActionDefinition[] = [
       ...listParam(ctx, 'harpies').map((id) => ({ performer: { kind: 'minion' as const, minionId: id as MinionId }, to: null })),
     ],
     locksMinions: (ctx) => listParam(ctx, 'harpies') as MinionId[],
+    // Vid upplösning är målets stad känd: utföraren hamnar där (V16).
+    destination: ({ state, entry }) => {
+      const t = entry.action.params?.['target'];
+      if (typeof t !== 'string') return null;
+      return state.players[t as PlayerId]?.location ?? state.minions[t as MinionId]?.location ?? null;
+    },
   }),
   define({
     id: 'expansion',

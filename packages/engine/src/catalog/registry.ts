@@ -6,6 +6,7 @@ import { FACTION_ACTIONS } from './actions/faction.js';
 import { MINION_ACTIONS } from './actions/minion.js';
 import { PERSONAL_ACTIONS } from './actions/personal.js';
 import { define } from './define.js';
+import { withDestinations } from './destination.js';
 import { strParam } from './options.js';
 import type { CatalogContext } from './types.js';
 
@@ -51,12 +52,10 @@ const PRESENCE_M = define({
   moves: (ctx) => chosen(ctx)?.moves?.(ctx) ?? [],
 });
 
-export const ACTION_CATALOG: ActionRegistry = createRegistry([
-  ...PERSONAL_ACTIONS,
-  ...FACTION_ACTIONS,
-  ...DISCIPLINE_ACTIONS,
-  PRESENCE_M,
-  ...MINION_ACTIONS,
-  ...ARTIFACT_ACTIONS,
-]);
+export const ACTION_CATALOG: ActionRegistry = createRegistry(
+  withDestinations(
+    [...PERSONAL_ACTIONS, ...FACTION_ACTIONS, ...DISCIPLINE_ACTIONS, PRESENCE_M, ...MINION_ACTIONS, ...ARTIFACT_ACTIONS],
+    () => ACTION_CATALOG,
+  ),
+);
 

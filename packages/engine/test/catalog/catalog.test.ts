@@ -423,3 +423,42 @@ describe('aktioner som kräver GM finns inte i motorn (docs/engine/not-fixed-act
     expect(notFixed.filter((id) => id in ACTION_CATALOG)).toEqual([]);
   });
 });
+
+describe('destination för kartan härleds från moves (V16)', () => {
+  const state = started();
+  const entry = (playerId: PlayerId, action: SubmittedAction) =>
+    ({ id: 'e1', playerId, index: 0, action, status: 'pending', paid: 0 }) as never;
+  const dest = (playerId: PlayerId, action: SubmittedAction) =>
+    ACTION_CATALOG[action.actionId]!.destination?.({ state, content, entry: entry(playerId, action) }) ?? null;
+
+  it('Move, Sail och minionens Move ger vald stad; aktioner utan förflyttning har ingen', () => {
+    expect(dest(P.prince, v('move', { to: 'east' }))).toBe('east');
+    expect(dest(P.prince, v('sail', { to: 'south' }))).toBe('south');
+    expect(dest(P.baron, mi('minion_move', minionId(state, 'Gang'), { to: 'north' }))).toBe('north');
+    expect(ACTION_CATALOG['bleed']!.destination).toBeUndefined();
+  });
+
+  it('Second Tradition: målets verkliga stad vid upplösning', () => {
+    const target = Object.values(state.players).find((p) => p.id !== P.prince && p.location)!;
+    expect(dest(P.prince, v('second_tradition', { target: target.id, harpies: [] }))).toBe(target.location);
+  });
+
+  it('resolveRound: den som ser en Move ser vampyren i destinationen', () => {
+    // Justicar står i North med Prince och får hög Intercept, så Move (stealth +2) syns.
+    const watched = cloneJson(state) as Mutable<GameState>;
+    const j = watched.players[P.justicar] as Mutable<GameState['players'][PlayerId]>;
+    j.modifiers = [...j.modifiers, { stat: 'intercept', amount: 10, source: 'test' as never, expiresAfterRound: null, ignoresRuleOfThree: true }];
+    const result = resolveRound(
+      watched as GameState,
+      { [P.prince]: { playerId: P.prince, actions: [v('move', { to: 'east' })], royalPrivilegesToSpend: 0, locked: true, updatedAt: 0 } },
+      'seed',
+      { content },
+    );
+    expect(result.status).toBe('completed');
+    const seen = result.resolution.events.filter(
+      (e) => e.kind === 'action_observed' && (e.data as { actionId?: string }).actionId === 'move' && e.data && 'at' in e.data,
+    );
+    expect(seen.length).toBeGreaterThan(0);
+    expect(seen.every((e) => (e.data as { at: string }).at === 'east')).toBe(true);
+  });
+});
