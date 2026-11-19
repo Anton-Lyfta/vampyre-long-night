@@ -18,12 +18,13 @@ npm run typecheck    # tsc --noEmit
 | `src/rng.ts` | Seedad RNG (sfc32), serialiserbar, med delströmmar |
 | `src/round/` | Rondens skelett: inlämning, budget, `resolveRound` |
 | `src/catalog/` | Actionkatalogen (`ACTION_CATALOG`): alla aktioner som data, meny, målval och utkastanalys (`docs/decisions/catalog.md`) |
+| `src/effects/` | Aktionernas effekter (`EFFECTS`) och inkomstfaserna 5a–5c (`docs/decisions/effects.md`). `stubbedActionIds()` listar aktioner som ännu saknar effekt |
 | `src/view/` | Per-spelare-vyer (`buildPlayerView`), GM-vy och observation (`observersOfAction`) |
 | `src/demo.ts` | Demokampanj för gränssnittet (`createDemoGame`, `createDemoRound`) |
 | `src/characters/` | Karaktärsskapande, backlog, lobby och kampanjstart (`docs/decisions/characters.md`) |
 | `test/` | Tester och fixturer (`test/fixtures.ts` har en kampanj med en spelare per titel) |
 
-Besluten bakom modellen står i `docs/decisions/state.md`, `round.md`, `views.md` och `catalog.md`.
+Besluten bakom modellen står i `docs/decisions/state.md`, `round.md`, `views.md`, `catalog.md` och `effects.md`.
 
 ## Gränssnittet
 

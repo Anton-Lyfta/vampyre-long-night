@@ -1,6 +1,6 @@
 import { DEFAULT_CONTENT, TEST_MAP } from '../../src/content/index.js';
 import { createGameState, type PlayerSetup } from '../../src/state/create.js';
-import type { Faction, MinionLevel, MinionType, Title } from '../../src/state/enums.js';
+import type { Clan, Faction, MinionLevel, MinionType, Title } from '../../src/state/enums.js';
 import type { MinionId, PlayerId } from '../../src/state/ids.js';
 import { cloneJson } from '../../src/state/json.js';
 import type { ActionBudgetModifier, Disguise, GameState, Mutable } from '../../src/state/types.js';
@@ -17,6 +17,9 @@ export interface PlayerSpec {
   blood?: number;
   royalPrivileges?: number;
   actionBudgetModifiers?: ActionBudgetModifier[];
+  clan?: Clan;
+  location?: string;
+  controls?: string[];
 }
 
 export interface MinionSpec {
@@ -24,6 +27,7 @@ export interface MinionSpec {
   type?: MinionType;
   level?: MinionLevel;
   acquiredRound?: number;
+  location?: string;
 }
 
 export interface World {
@@ -49,11 +53,12 @@ export function world(
     const faction = s.faction ?? (s.title === 'baron' ? 'anarch' : s.title === 'archbishop' ? 'sabbat' : 'camarilla');
     return {
       name: k,
-      clan: 'ventrue',
+      clan: s.clan ?? 'ventrue',
       faction,
       title: s.title === undefined ? 'prince' : s.title,
       ...(s.disguise ? { disguise: s.disguise } : {}),
-      location: 'north',
+      location: s.location ?? 'north',
+      ...(s.controls ? { controls: s.controls } : {}),
       blood: s.blood ?? 100,
       disciplines: {},
       royalPrivileges: s.royalPrivileges ?? 0,
@@ -90,6 +95,7 @@ export function world(
   for (const mk of minionKeys) {
     const m = state.minions[M[mk]!]!;
     m.acquiredRound = minions[mk]!.acquiredRound ?? 0;
+    if (minions[mk]!.location) m.location = minions[mk]!.location as typeof m.location;
   }
   assertValidState(state as GameState, content);
   return { state: state as GameState, P, M };
