@@ -122,3 +122,21 @@ describe('localPort: actions', () => {
     expect(port.isLocked()).toBe(false);
   });
 });
+
+describe('localPort: minionernas actions', () => {
+  it('en ruta per minion med använt/tillåtet, och Anarch Mission ger en till', () => {
+    const port = createDemoPort('innerCircle');
+    const ronald = port.actionChoices([]).find((c) => c.performerName === 'Ronald' && c.actionId === 'minion_move')!;
+    const a = port.analyze([act('minion_move', { to: 'north' }, ronald.performer)]);
+    expect(a.minionActions.map((m) => [m.name, m.used, m.allowed])).toEqual([
+      ['Ronald', 1, 1],
+      ['Jenny Wren', 0, 1],
+    ]);
+    const two = port.analyze([
+      act('minion_move', { to: 'north' }, ronald.performer),
+      act('bleed_the_enemy', {}, ronald.performer),
+    ]);
+    expect(two.minionActions[0]).toMatchObject({ used: 2, allowed: 1 });
+    expect(two.canConfirm).toBe(false);
+  });
+});

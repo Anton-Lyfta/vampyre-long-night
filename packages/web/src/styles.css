@@ -68,7 +68,7 @@ body { margin: 0; background: var(--bg); }
 .row-tools button { padding: 2px 6px; }
 .link-button { background: none; border: 0; text-decoration: underline; cursor: pointer; color: var(--muted); }
 
-.action-summary { display: flex; gap: 12px; }
+.action-summary { display: flex; flex-wrap: wrap; gap: 8px; }
 .action-summary > div { background: var(--banner); padding: 8px 12px; }
 .ap.over { color: var(--error); font-weight: 700; }
 .panel-error { color: var(--error); margin: 0; }

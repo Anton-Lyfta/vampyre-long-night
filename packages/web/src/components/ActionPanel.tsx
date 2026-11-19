@@ -132,6 +132,15 @@ export function ActionPanel({ port, round }: { port: PlayerScreenPort; round: nu
         <div className={overAp ? 'ap over' : 'ap'} data-testid="ap-used">
           {analysis.apUsed}/{analysis.apTotal} action points used
         </div>
+        {analysis.minionActions.map((m) => (
+          <div
+            key={m.minionId}
+            className={m.used > m.allowed ? 'ap minion over' : 'ap minion'}
+            data-testid={`minion-ap-${m.minionId}`}
+          >
+            {m.name}: {m.used}/{m.allowed}
+          </div>
+        ))}
         <div className="total-cost" data-testid="total-cost" title="Total kostnad minus säker inkomst">
           <Blood amount={net} />
         </div>

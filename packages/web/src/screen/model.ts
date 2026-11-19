@@ -125,10 +125,21 @@ export interface DraftEntryInfo {
   errors: string[];
 }
 
+/** En minions egna actions (varje minion har en action, Anarch Mission kan ge en till). */
+export interface MinionActionCount {
+  minionId: string;
+  name: string;
+  used: number;
+  allowed: number;
+}
+
 export interface DraftAnalysis {
   entries: DraftEntryInfo[];
+  /** Bara vampyrens slots. */
   apUsed: number;
   apTotal: number;
+  /** En rad per egen minion, i id-ordning. */
+  minionActions: MinionActionCount[];
   totalCost: number;
   totalIncome: number;
   /** Fel som inte hör till en enskild rad. */

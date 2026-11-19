@@ -52,9 +52,9 @@ analyzeSubmission    ─┘
 
 ## Antaganden som ska bekräftas av Gustaf
 
-1. **AP räknar bara vampyrens slots** (motorns `slotsUsed`/`budget.total`). Minions har en egen action var
-   och räknas inte i X/Y. Mockupens 4/4 med två Move och två Bleed (en av en minion) kan tolkas båda sätten.
+1. ~~AP~~ **Bekräftat av Gustaf 2026-11-19:** X/Y AP räknar bara vampyrens slots. Varje minion har en
+   action och får en egen ruta "Namn: X/Y" bredvid (Y = 1, eller 2 med Anarch Mission).
 2. **Confirm är avstängd även vid andra fel än för många actions**, t.ex. om listan kostar mer blood än
    spelaren har. Felet visas på raden.
-3. **Årtal** ("Year XXXX" i mockupen) finns inte i motorn. Visar bara "Rond X av 8" tills vidare.
+3. **Bekräftat av Gustaf 2026-11-19:** inget årtal, bara aktuell rond ("Rond X av 8").
 4. **Flikarna** utöver kartan är platshållare med namn gissade från mockupens ikoner.

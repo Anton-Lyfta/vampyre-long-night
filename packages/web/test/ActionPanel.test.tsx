@@ -91,3 +91,11 @@ describe('huvudskärmen', () => {
     expect(screen.getByRole('button', { name: '+ Lägg till action' })).toBeTruthy();
   });
 });
+
+describe('minionrutor', () => {
+  it('visar en ruta per minion', () => {
+    render(<App port={createDemoPort('innerCircle')} />);
+    expect(screen.getByText('Ronald: 0/1')).toBeTruthy();
+    expect(screen.getByText('Jenny Wren: 0/1')).toBeTruthy();
+  });
+});

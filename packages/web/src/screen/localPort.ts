@@ -81,10 +81,23 @@ export function createLocalPort(opts: LocalPortOptions): PlayerScreenPort {
         ...a.errors.filter((e) => e.entryIndex === i).map((e) => e.message),
       ],
     }));
+    const minionActions = Object.values(state.minions)
+      .filter((m) => m.owner.kind === 'player' && m.owner.id === playerId)
+      .sort((x, y) => x.id.localeCompare(y.id))
+      .map((m) => ({
+        minionId: m.id as string,
+        name: m.name,
+        used: draft.filter((d) => d.performer.kind === 'minion' && d.performer.minionId === m.id).length,
+        // Anarch Mission ger minionen en extra action (max en, som i motorns validering).
+        allowed:
+          1 +
+          (draft.some((d) => registry[d.actionId]?.grantsMinionAction && d.params.minionId === m.id) ? 1 : 0),
+      }));
     return {
       entries,
       apUsed: a.slotsUsed,
       apTotal: a.budget?.total ?? 0,
+      minionActions,
       totalCost: a.totalCost,
       totalIncome: entries.reduce((s, e) => s + (e.income ?? 0), 0),
       errors: a.errors.filter((e) => e.entryIndex === undefined).map((e) => e.message),
