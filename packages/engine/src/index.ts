@@ -8,6 +8,7 @@ export * from './state/index.js';
 export * from './content/index.js';
 export * from './rng.js';
 export * from './round/index.js';
+export * from './catalog/index.js';
 export * from './view/index.js';
 export * from './demo.js';
 export * from './characters/index.js';

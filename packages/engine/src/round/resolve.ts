@@ -1,6 +1,5 @@
+import { ACTION_CATALOG } from '../catalog/registry.js';
 import {
-  actionCost,
-  SKELETON_ACTIONS,
   type ActionContext,
   type ActionDefinition,
   type ActionOutcome,
@@ -132,7 +131,7 @@ export function continueResolution(
 ): RoundResult {
   if (resolution.status !== 'suspended') throw new Error('Upplösningen är inte pausad');
   const res = clone(resolution);
-  const registry = opts.registry ?? SKELETON_ACTIONS;
+  const registry = opts.registry ?? ACTION_CATALOG;
   for (const answer of answers) {
     const i = res.pendingInterrupts.findIndex((it) => it.id === answer.interruptId);
     if (i < 0) throw new Error(`Okänd eller redan besvarad interrupt ${answer.interruptId}`);
@@ -156,7 +155,7 @@ export function continueResolution(
 // Körning
 
 function run(res: RoundResolution, submissions: Record<PlayerId, Submission> | null, opts: ResolveOptions): RoundResult {
-  const registry = opts.registry ?? SKELETON_ACTIONS;
+  const registry = opts.registry ?? ACTION_CATALOG;
   while (res.cursor.phaseIndex < PHASES.length) {
     const phase = PHASES[res.cursor.phaseIndex]!;
     switch (phase) {
@@ -289,8 +288,7 @@ function payActions(
     for (const id of res.lists[pid]!) {
       const entry = res.entries[id]!;
       if (entry.status !== 'pending') continue;
-      const def = registry[entry.action.actionId]!;
-      entry.paid = actionCost(def, { state, content, player, action: entry.action });
+      entry.paid = norm.analysis.entryCosts[entry.index] ?? 0;
       total += entry.paid;
     }
     // normalizeSubmission garanterar total ≤ blood.
