@@ -72,7 +72,7 @@ Beslut i `docs/decisions/effects.md`, kod i `packages/engine/src/effects/`.
 - [ ] **Unresolved: tak för bleed (E7).** Gäller "can't gain more than the city's blood flow" alla bleeds? Provisoriskt ja (Bleed the Enemy, Aaron's Feeding Razor m.fl.). — `bleedCity` i `src/effects/blood.ts`
 - [ ] **Unresolved: Picky eater (E8).** Bara aktionen Bleed, och staden tappar hela beloppet medan spelaren får 10 mindre? Provisoriskt ja. — `bleedPenalty` i `src/effects/index.ts`
 - [ ] **Unresolved: controller i torpor (E10).** Får man stadens blood flow i torpor? Provisoriskt ja. — `payCityIncome` i `src/effects/income.ts`
-- [ ] **Unresolved: Hide och Rule of Three (E15).** Hide säger +5 stealth men Rule of Three max +3 per källa. Provisoriskt hela +5. — `hide` i `src/effects/index.ts`
+- [ ] **Unresolved: Hide och Rule of Three (E15).** Hide säger +5 stealth men Rule of Three max +3 per källa. Gustaf 2026-11-19: behåll +5 tills vidare, men fråga designern om det var avsikten. Rule of Three gäller actions enligt gd:532 (Protean-exemplet). — `hide` i `src/effects/index.ts`
 
 ## Effekter (hittat under `docs/engine/effects-plan.md`)
 - [ ] **Blood för förlorad stad:** "If you lose control of a city you will gain the city's full blood flow at the start of the next round" (gd:521–522). Byggs när något kan byta controller (steg 5).

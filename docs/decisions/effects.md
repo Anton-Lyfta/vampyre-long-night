@@ -75,6 +75,7 @@
 **Motivering:** "for this turn" (gd:1141–1147, gd:1176).
 
 ## E15. Hide och Rule of Three ⏸️
+**Status:** Gustaf 2026-11-19: behåll +5 tills vidare; frågan till designern står kvar i BACKLOG.
 **Beslut:** Hide ger hela +5 stealth (`ignoresRuleOfThree`).
 **Motivering:** Rule of Three säger "never more than +3 in any stat from any single source" (gd:529–531), men Hide säger uttryckligen +5. Den specifika regeln får gå före den allmänna; annars vore Hide bara +3. Designfråga i BACKLOG.
 
