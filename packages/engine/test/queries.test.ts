@@ -5,7 +5,7 @@ import {
   apparentTitle,
   artifactLocation,
   baseActionBudget,
-  baseIvoryTowerVotes,
+  baseSocietyVotes,
   cityStat,
   citySect,
   cloneJson,
@@ -181,21 +181,21 @@ describe('aktionsbudget (M6)', () => {
   });
 });
 
-describe('Ivory Tower-röster (gd:582)', () => {
-  it('per titel, 0 utanför Camarilla, förklädnaden räknas', () => {
+describe('Vampiric Society-röster (gd:582, V18)', () => {
+  it('per skenbar titel för alla sekter, förklädnaden räknas', () => {
     const s = sampleState();
-    const votes = (id: typeof P.inner): number => baseIvoryTowerVotes(content, s.players[id]!);
+    const votes = (id: typeof P.inner): number => baseSocietyVotes(content, s.players[id]!);
     expect(votes(P.inner)).toBe(4);
     expect(votes(P.justicar)).toBe(3);
     expect(votes(P.prince)).toBe(2);
-    expect(votes(P.baron)).toBe(0);
+    expect(votes(P.baron)).toBe(0); // Baron-titelns röster är en öppen fråga (content: 0)
     expect(votes(P.bishop)).toBe(2);
-    expect(votes(P.untitled)).toBe(0); // Anarch utan titel
+    expect(votes(P.untitled)).toBe(1); // Anarch utan titel röstar som Camarilla utan titel
   });
 
-  it('Camarilla utan titel har 1 röst', () => {
+  it('utan titel: 1 röst', () => {
     const s = edit((s) => (s.players[P.prince]!.title = null));
-    expect(baseIvoryTowerVotes(content, s.players[P.prince]!)).toBe(1);
+    expect(baseSocietyVotes(content, s.players[P.prince]!)).toBe(1);
   });
 });
 

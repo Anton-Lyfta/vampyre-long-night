@@ -19,6 +19,37 @@ export function royalPrivilegesSpent(player: Player, submission: Submission | un
   return Math.max(0, Math.min(wanted, player.royalPrivileges));
 }
 
+/** Det budgeten räknas från. Finns både i `Player`+state och i `PlayerView.me`. */
+export interface BudgetInput {
+  round: number;
+  /** Grundbudget (M6), se `baseActionBudget`. */
+  baseActionBudget: number;
+  status: Player['status'];
+  royalPrivileges: number;
+  actionBudgetModifiers: Player['actionBudgetModifiers'];
+}
+
+/** Vampyrens aktionsbudget (M6) från färdiga indata. Delas av state- och vyvarianten. */
+export function budgetFrom(input: BudgetInput, royalPrivilegesToSpend: number, schemeActions: number): BudgetBreakdown {
+  const base = input.baseActionBudget;
+  const royalPrivileges = Math.max(0, Math.min(royalPrivilegesToSpend, input.royalPrivileges));
+  const mods = input.actionBudgetModifiers.filter((m) => m.round === input.round);
+  const bonus = mods.filter((m) => m.kind === 'bonus').reduce((s, m) => s + m.amount, 0);
+  const caps = mods.filter((m) => m.kind === 'cap').map((m) => m.amount);
+  // Torpor: en enda vampyraktion (gd:203). Att den måste vara Awaken kontrolleras i valideringen.
+  if (input.status === 'torpor') caps.push(1);
+  const cap = caps.length ? Math.min(...caps) : null;
+  const uncapped = base + royalPrivileges + schemeActions + bonus;
+  return {
+    base,
+    royalPrivileges,
+    sabbatScheme: schemeActions,
+    bonus,
+    cap,
+    total: cap === null ? uncapped : Math.min(uncapped, cap),
+  };
+}
+
 /**
  * Vampyrens aktionsbudget för ronden `state.round` (M6).
  * `schemeActions` = spelarens andel av Sabbat schemes (C2), redan avgjord.
@@ -30,23 +61,17 @@ export function computeBudget(
   submission: Submission | undefined,
   schemeActions: number,
 ): BudgetBreakdown {
-  const base = baseActionBudget(state, content, player.id);
-  const royalPrivileges = royalPrivilegesSpent(player, submission);
-  const mods = player.actionBudgetModifiers.filter((m) => m.round === state.round);
-  const bonus = mods.filter((m) => m.kind === 'bonus').reduce((s, m) => s + m.amount, 0);
-  const caps = mods.filter((m) => m.kind === 'cap').map((m) => m.amount);
-  // Torpor: en enda vampyraktion (gd:203). Att den måste vara Awaken kontrolleras i validate.
-  if (player.status === 'torpor') caps.push(1);
-  const cap = caps.length ? Math.min(...caps) : null;
-  const uncapped = base + royalPrivileges + schemeActions + bonus;
-  return {
-    base,
-    royalPrivileges,
-    sabbatScheme: schemeActions,
-    bonus,
-    cap,
-    total: cap === null ? uncapped : Math.min(uncapped, cap),
-  };
+  return budgetFrom(
+    {
+      round: state.round,
+      baseActionBudget: baseActionBudget(state, content, player.id),
+      status: player.status,
+      royalPrivileges: player.royalPrivileges,
+      actionBudgetModifiers: player.actionBudgetModifiers,
+    },
+    submission?.royalPrivilegesToSpend ?? 0,
+    schemeActions,
+  );
 }
 
 /** Spelare som räknas som Sabbat för schemes: Sabbat-sekt (även dolda), inte brända. */
@@ -67,7 +92,12 @@ function canonicalAllocation(alloc: Record<PlayerId, number>): string {
 
 /** Kontrollerar att en fördelning är giltig i sig (oavsett om alla är överens). */
 export function schemeAllocationProblem(state: GameState, alloc: Record<PlayerId, number>): string | null {
-  const members = new Set(sabbatPlayers(state));
+  return schemeAllocationProblemFor(sabbatPlayers(state), alloc);
+}
+
+/** Som `schemeAllocationProblem`, men med Sabbat-spelarna givna (vyn vet vilka de är). */
+export function schemeAllocationProblemFor(sabbatMembers: readonly PlayerId[], alloc: Record<PlayerId, number>): string | null {
+  const members = new Set(sabbatMembers);
   let sum = 0;
   for (const [id, n] of Object.entries(alloc)) {
     if (!Number.isInteger(n) || n < 0) return `Ogiltigt antal för ${id}`;

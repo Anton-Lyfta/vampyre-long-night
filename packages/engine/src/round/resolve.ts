@@ -1,6 +1,5 @@
+import { ACTION_CATALOG } from '../catalog/registry.js';
 import {
-  actionCost,
-  SKELETON_ACTIONS,
   type ActionContext,
   type ActionDefinition,
   type ActionOutcome,
@@ -14,7 +13,8 @@ import {
   createRng,
   deriveSeed,
   minionUpkeep,
-  observersOfAction,
+  actionOrigin,
+  observerGroups,
   sortedIds,
   type Content,
   type GameState,
@@ -132,7 +132,7 @@ export function continueResolution(
 ): RoundResult {
   if (resolution.status !== 'suspended') throw new Error('Upplösningen är inte pausad');
   const res = clone(resolution);
-  const registry = opts.registry ?? SKELETON_ACTIONS;
+  const registry = opts.registry ?? ACTION_CATALOG;
   for (const answer of answers) {
     const i = res.pendingInterrupts.findIndex((it) => it.id === answer.interruptId);
     if (i < 0) throw new Error(`Okänd eller redan besvarad interrupt ${answer.interruptId}`);
@@ -156,7 +156,7 @@ export function continueResolution(
 // Körning
 
 function run(res: RoundResolution, submissions: Record<PlayerId, Submission> | null, opts: ResolveOptions): RoundResult {
-  const registry = opts.registry ?? SKELETON_ACTIONS;
+  const registry = opts.registry ?? ACTION_CATALOG;
   while (res.cursor.phaseIndex < PHASES.length) {
     const phase = PHASES[res.cursor.phaseIndex]!;
     switch (phase) {
@@ -289,8 +289,7 @@ function payActions(
     for (const id of res.lists[pid]!) {
       const entry = res.entries[id]!;
       if (entry.status !== 'pending') continue;
-      const def = registry[entry.action.actionId]!;
-      entry.paid = actionCost(def, { state, content, player, action: entry.action });
+      entry.paid = norm.analysis.entryCosts[entry.index] ?? 0;
       total += entry.paid;
     }
     // normalizeSubmission garanterar total ≤ blood.
@@ -441,34 +440,44 @@ function resolveEntry(res: RoundResolution, id: EntryId, registry: ActionRegistr
 function observeAction(res: RoundResolution, entry: EntryRecord, def: ActionDefinition, content: Content, phase: PhaseId): void {
   const state = res.state as GameState;
   const targets = def.targets?.({ state, content, entry }) ?? {};
-  const observers = observersOfAction(state, content, {
+  const destination = def.destination?.({ state, content, entry }) ?? null;
+  const observed = {
     playerId: entry.playerId,
     performer: entry.action.performer,
     stealth: def.stealth,
     targetCities: targets.cities ?? [],
-  });
-  if (observers.kind === 'players' && observers.ids.length === 0) return;
+    destination,
+  };
+  const groups = observerGroups(state, content, observed);
   const performer: { [key: string]: Json } =
     entry.action.performer.kind === 'vampire'
       ? { kind: 'vampire', playerId: entry.playerId }
       : { kind: 'minion', minionId: entry.action.performer.minionId, controllerId: entry.playerId };
-  emit(
-    res,
-    phase,
-    'action_observed',
-    {
+  const at = destination ?? actionOrigin(state, observed);
+  const data = (withPosition: boolean): { [key: string]: Json } => {
+    const d: { [key: string]: Json } = {
       actionId: def.id,
-      performer,
+      performer: { ...performer },
       targets: {
         cities: [...(targets.cities ?? [])],
         players: [...(targets.players ?? [])],
         minions: [...(targets.minions ?? [])],
       },
-    },
-    undefined,
-    undefined,
-    observers,
-  );
+    };
+    if (withPosition && at !== null) d.at = at;
+    return d;
+  };
+  if (groups.kind === 'public') {
+    emit(res, phase, 'action_observed', data(true), undefined, undefined, groups);
+    return;
+  }
+  // Olika publiker som vet olika saker får olika events (V10, V16).
+  if (groups.located.length > 0) {
+    emit(res, phase, 'action_observed', data(true), undefined, undefined, { kind: 'players', ids: groups.located });
+  }
+  if (groups.targetOnly.length > 0) {
+    emit(res, phase, 'action_observed', data(false), undefined, undefined, { kind: 'players', ids: groups.targetOnly });
+  }
 }
 
 function applyOutcome(res: RoundResolution, entry: EntryRecord, outcome: ActionOutcome, phase: PhaseId): void {
