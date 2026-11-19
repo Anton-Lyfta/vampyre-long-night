@@ -72,9 +72,11 @@ Beslut i `docs/decisions/effects.md`, kod i `packages/engine/src/effects/`.
 - [ ] **Unresolved: tak för bleed (E7).** Gäller "can't gain more than the city's blood flow" alla bleeds? Provisoriskt ja (Bleed the Enemy, Aaron's Feeding Razor m.fl.). — `bleedCity` i `src/effects/blood.ts`
 - [ ] **Unresolved: Picky eater (E8).** Bara aktionen Bleed, och staden tappar hela beloppet medan spelaren får 10 mindre? Provisoriskt ja. — `bleedPenalty` i `src/effects/index.ts`
 - [ ] **Unresolved: controller i torpor (E10).** Får man stadens blood flow i torpor? Provisoriskt ja. — `payCityIncome` i `src/effects/income.ts`
+- [ ] **Unresolved: Hide och Rule of Three (E15).** Hide säger +5 stealth men Rule of Three max +3 per källa. Gustaf 2026-11-19: behåll +5 tills vidare, men fråga designern om det var avsikten. Rule of Three gäller actions enligt gd:532 (Protean-exemplet). — `hide` i `src/effects/index.ts`
 
 ## Effekter (hittat under `docs/engine/effects-plan.md`)
 - [ ] **Blood för förlorad stad:** "If you lose control of a city you will gain the city's full blood flow at the start of the next round" (gd:521–522). Byggs när något kan byta controller (steg 5).
 - [ ] **Summon the Storm** ska ge storm *från nästa rond*. `SeaRegion.storm` har bara `untilEndOfRound`, så en storm som sätts under ronden blockerar Sail redan samma rond. Behöver en startrond (eller en OngoingEffect som sätter stormen i fas 2). Byggs med Summon the Storm (steg 2).
 - [ ] **Brujah m.fl. klan-curses som rör blood** (Decadence −5, Ventrue wealth +10, Gangrel/Tzimisce-förluster) dras inte än. Byggs i steg 7; Picky eater och Monstrous är redan med eftersom de hör till Bleed och Move.
 - [ ] **`bloodAtEndOfLastRound`** sätts aldrig. Lasombra-cursen (gd:785) behöver det. Sätt det i fas 5d när klanreglerna byggs.
+- [ ] **Nosferatus boon (Always listening)** ska ge +1 intercept när de gör Obfuscate, Hide eller In the Shadows (gd:803). Byggs med klanreglerna (steg 7).

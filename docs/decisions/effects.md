@@ -12,6 +12,7 @@
 | E7 ⏸️ | Gäller taket "inte mer än stadens blood flow" alla bleeds? | Ja, också Bleed the Enemy, Aaron's Feeding Razor m.fl. |
 | E8 ⏸️ | Picky eater: vilka bleeds, och tappar staden hela beloppet? | Bara aktionen Bleed. Staden tappar hela, spelaren får 10 mindre. |
 | E10 ⏸️ | Får en controller i torpor stadens blood flow? | Ja. |
+| E15 ⏸️ | Hide ger +5 stealth, men Rule of Three säger max +3 per källa. | Hide får hela +5. |
 
 ---
 
@@ -64,3 +65,39 @@
 ## E13. Monstrous
 **Beslut:** Nosferatus curse ("The Move action costs +5 blood", gd:804) läggs på vampyrens Move i katalogen. Minionernas Move påverkas inte.
 **Motivering:** "The Move action" är vampyrens personal action.
+
+---
+
+## Steg 2 (2026-11-19)
+
+## E14. Personliga buffar gäller ronden ut
+**Beslut:** Watchful Eyes (+1 intercept), In the Shadows (+1 stealth), Blood for Blood (+1 strength) och Hide (+5 stealth) lägger en `StatModifier` med källan `action:<id>` som gäller till slutet av ronden. Aktioner senare samma rond observeras och jagas med den nya staten (M18). Buffen gäller vampyren, inte dess minions.
+**Motivering:** "for this turn" (gd:1141–1147, gd:1176).
+
+## E15. Hide och Rule of Three ⏸️
+**Status:** Gustaf 2026-11-19: behåll +5 tills vidare; frågan till designern står kvar i BACKLOG.
+**Beslut:** Hide ger hela +5 stealth (`ignoresRuleOfThree`).
+**Motivering:** Rule of Three säger "never more than +3 in any stat from any single source" (gd:529–531), men Hide säger uttryckligen +5. Den specifika regeln får gå före den allmänna; annars vore Hide bara +3. Designfråga i BACKLOG.
+
+## E16. Get a Minion
+**Beslut:** Minionen hamnar i vampyrens stad, får `acquiredRound` = ronden (ingen upkeep den ronden, gd:217) och ett genererat namn ("Ghoul 7"). The broken pyramid (Tremere-curse, gd:832) stoppar Lvl 3 redan i katalogen och igen vid upplösning.
+**Motivering:** Regeln säger inte var minionen hamnar; vampyrens stad är det naturliga. Namnet saknar regel; gränssnittet kan låta spelaren byta namn senare.
+
+## E17. Bestow Gifts
+**Beslut:** +1 level på en egen minion, högst 3 (högst 2 för The broken pyramid). Är minionen inte längre spelarens, eller redan på max, misslyckas aktionen.
+
+## E18. Awaken: vem och var
+**Beslut:** Man väcker sig själv i torpor, eller en annan vampyr som är i torpor i samma stad när aktionen löses. Annars misslyckas aktionen. Salubri (Healers and scholars, gd:817) ger två ticks på målet. Vid `required` ticks blir vampyren aktiv.
+**Motivering:** gd:1170.
+
+## E19. Vad målet för Awaken får veta
+**Beslut:** Målet får `torpor_progress` (ticks, krav, vaken) men inte vem som väckte. Den som väckte får `awaken_done` utan målets progress.
+**Motivering:** Torpor är dolt (V4); att avslöja aktören skulle gå förbi Awakens stealth (+3).
+
+## E20. Control the Masquerade är permanent
+**Beslut:** Control the Masquerade ändrar stadens permanenta `masquerade`, inte en modifier.
+**Motivering:** Regeln anger ingen tidsgräns.
+
+## E21. Masquerade violation lagas vid 5
+**Beslut:** När Control the Masquerade gör stadens effektiva masquerade 5 tas en aktiv violation bort, med ett publikt event.
+**Motivering:** gd:915 "until the masquerade violation has been mended by giving the city that triggered the violation 5/5 MS". Violation är publik (V5/V6).
