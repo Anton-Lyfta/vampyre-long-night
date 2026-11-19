@@ -36,3 +36,11 @@ Sidofynd som inte hör till pågående scope. Skriv var fyndet gjordes.
 ## Karaktärsskapande (hittat under `docs/decisions/characters.md`)
 - [ ] **Ring of Tremere är avstängd** (K14): den ligger inte i slumppoolen eftersom man ska välja disciplin när man får den (gd:420). Hitta ett sätt att hantera valet (startartefakt, Search, My treasure, stöld) och slå på den igen.
 - [ ] **Toreador-obsession** (C8) dras fortfarande inte vid kampanjstart.
+
+## Actionkatalog (hittat under `docs/decisions/catalog.md`)
+- [ ] **Bundna discipliner:** Ring of Tremere och (M)Thaumaturgy-skapade artefakter har ingen aktion i katalogen; inte heller artefaktaktioner som (M)Thaumaturgy gett permanent (`grantedArtifactActions`) (K15).
+- [ ] **Hide and Spy** ska spärra minionens action nästa rond (gd:296). Kräver att förra rondens aktioner sparas.
+- [ ] **Martinelli's Ring** ska ta bort Dementation så länge man bär den (gd:395).
+- [ ] **(M)Presence-stealth** ska vara den valda aktionens; observationen läser idag `def.stealth` (0) (K9).
+- [ ] **Känd information i målval:** när motorn vet vad en spelare garanterat vet (kartvyn), sortera kända mål "i samma stad" överst (K3).
+- [ ] **Regelbokens rubrik "Bottles wealth of the camarilla"** (gd:1047) ska vara Bottomless Wealth. "Presens"/"Pressens" och "Visisetude" är också felstavade.

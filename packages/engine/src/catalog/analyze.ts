@@ -441,6 +441,10 @@ export function analyzeDraft(
       const cost = actionCost(def, ctx);
       if (!Number.isInteger(cost) || cost < 0) err('invalid_params', `Ogiltig kostnad ${cost}`);
       else entry.cost = cost;
+    } else if (!def.variableCost) {
+      // Ofullständig entry: visa kostnaden om den inte beror på valen (Move: 5/10).
+      const cost = actionCost(def, ctx);
+      if (Number.isInteger(cost) && cost > 0) entry.cost = cost;
     }
     if (def.income !== undefined && (pc.complete || typeof def.income === 'number')) {
       const income = actionIncome(def, ctx);
