@@ -1,7 +1,7 @@
 /** Flikmenyn uppe till höger. Bara kartan finns än; övriga är platshållare (namn gissade från mockupen). */
 export const TABS = [
   { id: 'map', label: 'Karta', icon: '🗺' },
-  { id: 'ivory_tower', label: 'Ivory Tower', icon: '🏰' },
+  { id: 'society', label: 'Vampiric Society', icon: '🏰' },
   { id: 'disciplines', label: 'Discipliner', icon: '🦷' },
   { id: 'titles', label: 'Titlar', icon: '👑' },
   { id: 'history', label: 'Ronder', icon: '⌛' },

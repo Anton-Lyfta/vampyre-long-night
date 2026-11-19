@@ -16,7 +16,7 @@ export interface Resources {
   vp: number;
   artifacts: number;
   minions: number;
-  /** Röster i Ivory Tower / vampiric society. */
+  /** Röster i Vampiric Society (alla sekter röstar). */
   votes: number;
 }
 

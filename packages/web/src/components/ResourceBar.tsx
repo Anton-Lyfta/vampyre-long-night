@@ -5,7 +5,7 @@ const ITEMS: { key: keyof Resources; label: string; icon: string }[] = [
   { key: 'vp', label: 'Victory Points', icon: '✦' },
   { key: 'artifacts', label: 'Artefakter', icon: '🏺' },
   { key: 'minions', label: 'Minions', icon: '👥' },
-  { key: 'votes', label: 'Röster i Ivory Tower', icon: '🗳' },
+  { key: 'votes', label: 'Röster i Vampiric Society', icon: '🗳' },
 ];
 
 export function ResourceBar({ resources }: { resources: Resources }) {
