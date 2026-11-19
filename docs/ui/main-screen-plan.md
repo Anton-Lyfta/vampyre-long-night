@@ -12,20 +12,19 @@ stöder tangentbord och pekskärm. Tester: Vitest + Testing Library + jsdom.
 ## Arkitektur
 
 ```
-PlayerView (motorn)  ─┐
-actionkatalog        ─┼─>  PlayerScreenPort (src/screen/port.ts)  ─>  React-komponenter
-analyzeSubmission    ─┘
+PlayerView (motorn, inkl. map och resources) ─┐
+listAvailableActions / nextParam / analyzeDraft ─┼─>  PlayerScreenPort (src/screen/model.ts)  ─>  React-komponenter
+submitActions (servern; lokalt i dev)          ─┘
 ```
 
 - Komponenterna känner bara till typerna i `src/screen/model.ts`, aldrig `GameState` eller `PlayerView`.
-- `src/screen/localPort.ts` implementerar porten genom att köra motorn i webbläsaren på demokampanjen
-  (`createDemoRound()`). Det är bara för utveckling: enligt SPEC B1 ska motorn köras på servern, och då
-  byts den här porten mot en som anropar servern. Komponenterna påverkas inte.
-- `src/screen/catalogShim.ts` är en tillfällig actionkatalog (vilka actions, vilka mål, kostnad) byggd på
-  skelettets `SKELETON_ACTIONS`. Den ersätts av motorns katalog från tråden "Bygg actionkatalog och mål i motorn".
-- `src/screen/mapModel.ts` gör kartmodellen av `PlayerView`. Andra spelares vampyrer och minions på kartan
-  kräver motorns "garanterad info" från tråden "Visa bara garanterad info på kartan"; tills dess visas bara
-  egna pjäser, vilket redan följer regeln om att bara visa garanterad information.
+- `src/screen/viewPort.ts` implementerar porten med motorns katalog (`listAvailableActions`, `nextParam`,
+  `analyzeDraft`) och kartvy (`PlayerView.map`). Allt räknas från spelarens `PlayerView`, så porten kan köras
+  i klienten utan att se dold information. Entries får `key` = radens uid, så pekare mellan entries håller vid
+  drag-and-drop.
+- `src/screen/localPort.ts` bygger vyn från demokampanjen (`createDemoRound()`) och lämnar in med motorns
+  `submitActions`. Det är bara för utveckling: i spelet görs inlämningen av servern (SPEC B1), och bara
+  `submit`/`unlock`/`isLocked` byts ut.
 
 ## Skärmens delar
 

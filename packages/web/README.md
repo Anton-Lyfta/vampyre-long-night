@@ -16,8 +16,8 @@ npm run typecheck -w @vampyre/web
 | Fil | Innehåll |
 |---|---|
 | `src/screen/model.ts` | Skärmens modell och `PlayerScreenPort`. Det enda komponenterna känner till. |
-| `src/screen/localPort.ts` | Utvecklingsport som kör motorn lokalt (SPEC B1: i spelet körs motorn på servern). |
-| `src/screen/catalogShim.ts` | Tillfällig actionkatalog tills motorns katalog finns. |
-| `src/screen/mapModel.ts` | Kartmodell ur `PlayerView`: bara garanterad information. |
+| `src/screen/viewPort.ts` | Porten mot motorns actionkatalog och kartvy, räknad från `PlayerView`. |
+| `src/screen/localPort.ts` | Utvecklingsport: demokampanjen och lokal inlämning (SPEC B1: i spelet gör servern det). |
+| `src/screen/mapModel.ts` | Skalar `PlayerView.map` (bara garanterad information) till kartans rityta. |
 | `src/screen/draft.ts` | Rena operationer på actionlistan. |
 | `src/components/` | Resursrad, karta, flikmeny, vampyrpanel, actionpanel. |

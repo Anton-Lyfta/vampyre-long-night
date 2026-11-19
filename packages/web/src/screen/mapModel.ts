@@ -1,28 +1,22 @@
 /**
- * Kartmodellen ur en `PlayerView`. Regeln (Gustaf 2026-11-19): kartan visar bara
- * information spelaren garanterat vet. Egna pjäser syns alltid. Andras pjäser
- * syns bara om spelaren såg dem förra ronden; den modellen kommer från tråden
- * "Visa bara garanterad info på kartan" och skickas in som `sightings`.
- * Ingen "last known position".
+ * Kartmodellen ur motorns `PlayerView.map`. Motorn avgör vad spelaren
+ * garanterat vet (V15–V19): egna pjäser alltid, andras bara om de sågs förra
+ * ronden och fortfarande är kvar. Ingen "last known position".
+ * Här skalas bara positionerna till kartans rityta.
  */
-import type { PlayerView } from '@vampyre/engine';
-import type { FactionKey, MapCity, MapModel, MapPiece } from './model';
+import type { MapView } from '@vampyre/engine';
+import type { FactionKey, MapModel } from './model';
 
 export interface Position {
   x: number;
   y: number;
 }
 
-/** En annan spelares pjäs som spelaren garanterat vet var den är. */
-export interface Sighting {
-  cityId: string;
-  piece: Omit<MapPiece, 'own'>;
-}
-
 export const MAP_WIDTH = 1000;
 export const MAP_HEIGHT = 700;
+const MARGIN = 90;
 
-/** Städerna jämnt på en ellips, i id-ordning. Används när kartan saknar positioner. */
+/** Städerna jämnt på en ellips, i id-ordning. Används för städer som saknar position. */
 export function fallbackLayout(cityIds: readonly string[]): Record<string, Position> {
   const out: Record<string, Position> = {};
   const n = cityIds.length;
@@ -36,51 +30,54 @@ export function fallbackLayout(cityIds: readonly string[]): Record<string, Posit
   return out;
 }
 
-export function buildMapModel(
-  view: PlayerView,
-  opts: { positions?: Record<string, Position>; sightings?: readonly Sighting[] } = {},
-): MapModel {
-  const factionOf = new Map(view.players.map((p) => [p.id as string, p.faction as FactionKey]));
-  const fallback = fallbackLayout(view.cities.map((c) => c.id));
+/** Skalar kartmallens koordinater till ritytan och behåller proportionerna. */
+export function fitPositions(positions: Record<string, Position>): Record<string, Position> {
+  const pts = Object.values(positions);
+  if (pts.length === 0) return {};
+  const minX = Math.min(...pts.map((p) => p.x));
+  const maxX = Math.max(...pts.map((p) => p.x));
+  const minY = Math.min(...pts.map((p) => p.y));
+  const maxY = Math.max(...pts.map((p) => p.y));
+  const w = Math.max(1, maxX - minX);
+  const h = Math.max(1, maxY - minY);
+  const scale = Math.min((MAP_WIDTH - 2 * MARGIN) / w, (MAP_HEIGHT - 2 * MARGIN) / h);
+  const offX = (MAP_WIDTH - w * scale) / 2;
+  const offY = (MAP_HEIGHT - h * scale) / 2;
+  return Object.fromEntries(
+    Object.entries(positions).map(([id, p]) => [
+      id,
+      { x: Math.round(offX + (p.x - minX) * scale), y: Math.round(offY + (p.y - minY) * scale) },
+    ]),
+  );
+}
 
-  const piecesByCity = new Map<string, MapPiece[]>();
-  const add = (cityId: string | null, piece: MapPiece) => {
-    if (!cityId) return;
-    const list = piecesByCity.get(cityId) ?? [];
-    if (!list.some((x) => x.kind === piece.kind && x.id === piece.id)) list.push(piece);
-    piecesByCity.set(cityId, list);
-  };
+export function buildMapModel(map: MapView): MapModel {
+  const allPlaced = map.cities.every((c) => c.position !== null);
+  const layout = allPlaced
+    ? fitPositions(Object.fromEntries(map.cities.map((c) => [c.id, c.position!])))
+    : fallbackLayout(map.cities.map((c) => c.id));
+  const ownerName = (id: string) => map.cities.flatMap((c) => c.occupants).find((o) => o.kind === 'vampire' && o.playerId === id)?.name;
 
-  const me = view.me;
-  if (me.status !== 'burned') {
-    add(me.location, { id: me.id, kind: 'vampire', name: me.name, own: true, ownerName: me.name });
-  }
-  for (const m of me.minions) {
-    add(m.location, {
-      id: m.id,
-      kind: 'minion',
-      name: m.name,
-      own: true,
-      ownerName: me.name,
-      minionType: m.type,
-    });
-  }
-  for (const s of opts.sightings ?? []) add(s.cityId, { ...s.piece, own: false });
-
-  const cities: MapCity[] = view.cities.map((c) => {
-    const pos = opts.positions?.[c.id] ?? fallback[c.id]!;
-    return {
+  return {
+    cities: map.cities.map((c) => ({
       id: c.id,
       name: c.name,
-      x: pos.x,
-      y: pos.y,
-      faction: c.controllerId ? (factionOf.get(c.controllerId) ?? null) : null,
-      pieces: piecesByCity.get(c.id) ?? [],
-    };
-  });
-
-  const links: [string, string][] = [];
-  for (const c of view.cities) for (const n of c.adjacent) if (c.id < n) links.push([c.id, n]);
-
-  return { cities, links };
+      x: layout[c.id]!.x,
+      y: layout[c.id]!.y,
+      faction: c.faction as FactionKey | null,
+      pieces: c.occupants.map((o) =>
+        o.kind === 'vampire'
+          ? { id: o.playerId, kind: 'vampire' as const, name: o.name, own: o.own, ownerName: o.name }
+          : {
+              id: o.minionId,
+              kind: 'minion' as const,
+              name: o.name,
+              own: o.own,
+              ownerName: ownerName(o.ownerId) ?? '',
+              minionType: o.type,
+            },
+      ),
+    })),
+    links: map.connections.map(([a, b]) => [a, b] as [string, string]),
+  };
 }

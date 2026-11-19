@@ -15,7 +15,7 @@ const setup = () => {
 async function addAction(user: ReturnType<typeof userEvent.setup>, name: string, ...targets: string[]) {
   await user.click(screen.getByRole('button', { name: '+ Lägg till action' }));
   const select = screen.getByRole('combobox', { name: 'Välj action' });
-  const option = within(select).getAllByRole('option').find((o) => o.textContent === name);
+  const option = within(select).getAllByRole('option').find((o) => o.textContent?.startsWith(`${name} –`));
   if (!option) throw new Error(`Ingen action ${name}`);
   await user.selectOptions(select, option);
   for (const t of targets) {
@@ -49,7 +49,7 @@ describe('huvudskärmen', () => {
     // Nästa Move utgår från South.
     await user.click(screen.getByRole('button', { name: '+ Lägg till action' }));
     await user.selectOptions(screen.getByRole('combobox', { name: 'Välj action' }), 'vampire:move');
-    const targets = within(screen.getByRole('combobox', { name: 'Till' }))
+    const targets = within(screen.getByRole('combobox', { name: 'Till stad' }))
       .getAllByRole('option')
       .map((o) => o.textContent);
     expect(targets).toContain('Isle');
@@ -97,5 +97,19 @@ describe('minionrutor', () => {
     render(<App port={createDemoPort('innerCircle')} />);
     expect(screen.getByText('Ronald: 0/1')).toBeTruthy();
     expect(screen.getByText('Jenny Wren: 0/1')).toBeTruthy();
+  });
+});
+
+describe('val av olika slag', () => {
+  it('talval (Buy Votes) ger rätt etikett och kostnad', async () => {
+    const user = setup();
+    await addAction(user, 'Buy Votes');
+    const input = screen.getByRole('spinbutton', { name: /Blood/ });
+    await user.clear(input);
+    await user.type(input, '20');
+    await user.click(screen.getByRole('button', { name: 'OK' }));
+    expect(rows()).toHaveLength(1);
+    expect(rows()[0]!.textContent).toContain('Buy Votes: 20');
+    expect(screen.getByTestId('total-cost').textContent).toContain('20');
   });
 });

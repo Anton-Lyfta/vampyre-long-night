@@ -91,7 +91,7 @@ body { margin: 0; background: var(--bg); }
 .piece text { text-anchor: middle; font-size: 14px; font-weight: 700; fill: #222; }
 .piece-vampire text { fill: #fff; }
 .round-badge { position: absolute; left: 0; bottom: 0; background: var(--panel); padding: 16px 24px; }
-.map-legend { position: absolute; right: 8px; bottom: 8px; list-style: none; margin: 0; padding: 8px; background: rgba(255,255,255,.8); font-size: .85rem; }
+.map-legend { position: absolute; right: 8px; top: 8px; list-style: none; margin: 0; padding: 8px; background: rgba(255,255,255,.8); font-size: .85rem; }
 .swatch { display: inline-block; width: 12px; height: 12px; border-radius: 50%; vertical-align: middle; }
 .swatch.faction-camarilla { background: var(--camarilla); }
 .swatch.faction-anarch { background: var(--anarch); }
@@ -104,3 +104,6 @@ body { margin: 0; background: var(--bg); }
   .side-panel { border-left: 0; }
   .game-map { max-height: 60vh; }
 }
+.multi-step { border: 0; padding: 0; margin: 0; display: flex; flex-wrap: wrap; gap: 4px 12px; }
+.multi-step legend { font-weight: 600; }
+.action-banner.composing { flex-wrap: wrap; }

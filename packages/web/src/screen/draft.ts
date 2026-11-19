@@ -9,9 +9,10 @@ export function addAction(
   actionId: string,
   performer: PerformerRef,
   params: Params,
+  paramLabels: Record<string, string> = {},
   uid: string = newUid(),
 ): DraftAction[] {
-  return [...list, { uid, actionId, performer, params: { ...params } }];
+  return [...list, { uid, actionId, performer, params: { ...params }, paramLabels: { ...paramLabels } }];
 }
 
 export function removeAction(list: readonly DraftAction[], uid: string): DraftAction[] {

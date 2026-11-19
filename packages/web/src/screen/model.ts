@@ -71,7 +71,8 @@ export interface MapModel {
 export type PerformerRef = { kind: 'vampire' } | { kind: 'minion'; minionId: string };
 
 export type ParamValue = string | number;
-export type Params = Record<string, ParamValue>;
+/** Ett val: ett värde, eller en lista vid flerval. */
+export type Params = Record<string, ParamValue | ParamValue[]>;
 
 /** En action som går att välja i dropdownen. */
 export interface ActionChoice {
@@ -83,6 +84,11 @@ export interface ActionChoice {
   performerName: string;
   performerKind: 'vampire' | 'minion';
   name: string;
+  /** Kostnad innan val. `costVaries` = beror på valen. */
+  cost: number;
+  costVaries: boolean;
+  /** Deterministisk inkomst, eller null. */
+  income: number | null;
   /** Satt om actionen inte går att välja nu, med skälet. */
   disabledReason?: string;
 }
@@ -93,7 +99,9 @@ export type TargetStep =
       kind: 'select';
       param: string;
       label: string;
-      options: { value: string; label: string }[];
+      options: { value: ParamValue; label: string; hint?: string }[];
+      /** Flerval: välj min–max alternativ. */
+      multiple?: { min: number; max: number };
     }
   | {
       kind: 'number';
@@ -101,15 +109,24 @@ export type TargetStep =
       label: string;
       min: number;
       max: number;
+      step: number;
+    }
+  | {
+      kind: 'text';
+      param: string;
+      label: string;
+      maxWords?: number;
     };
 
 /** En färdig action i spelarens lista. */
 export interface DraftAction {
-  /** Lokal id för listan (stabil vid omsortering). */
+  /** Lokal id för listan, stabil vid omsortering. Skickas som entryns `key`. */
   uid: string;
   actionId: string;
   performer: PerformerRef;
   params: Params;
+  /** Visningstext per val, sparad när valet gjordes. */
+  paramLabels: Record<string, string>;
 }
 
 export interface DraftEntryInfo {
@@ -117,8 +134,8 @@ export interface DraftEntryInfo {
   label: string;
   performerName: string;
   performerKind: 'vampire' | 'minion';
-  /** Blood-kostnad. */
-  cost: number;
+  /** Blood-kostnad, eller null om den beror på val som saknas. */
+  cost: number | null;
   /** Deterministisk blood-inkomst, eller null om actionen inte ger en säker inkomst. */
   income: number | null;
   /** Fel som gäller just den här raden. */

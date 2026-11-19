@@ -14,11 +14,11 @@ import { addAction, moveAction, removeAction, shiftAction } from '../screen/draf
 import type { DraftAction, DraftEntryInfo, PlayerScreenPort } from '../screen/model';
 import { ActionComposer } from './ActionComposer';
 
-function Blood({ amount, income }: { amount: number; income?: boolean }) {
+function Blood({ amount, income }: { amount: number | null; income?: boolean }) {
   return (
     <span className={income ? 'blood income' : 'blood'}>
       {income ? '+' : ''}
-      {amount} <span aria-hidden>🩸</span>
+      {amount ?? '?'} <span aria-hidden>🩸</span>
       <span className="sr-only"> blood{income ? ' inkomst' : ''}</span>
     </span>
   );
@@ -125,7 +125,7 @@ export function ActionPanel({ port, round }: { port: PlayerScreenPort; round: nu
         <ActionComposer
           port={port}
           draft={draft}
-          onAdd={(choice, params) => setDraft((d) => addAction(d, choice.actionId, choice.performer, params))}
+          onAdd={(choice, params, labels) => setDraft((d) => addAction(d, choice.actionId, choice.performer, params, labels))}
         />
       )}
       <div className="action-summary">

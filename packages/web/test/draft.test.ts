@@ -3,9 +3,9 @@ import { addAction, moveAction, removeAction, shiftAction } from '../src/screen/
 
 const v = { kind: 'vampire' } as const;
 const list = () => {
-  let l = addAction([], 'bleed', v, {}, 'a');
-  l = addAction(l, 'move', v, { to: 'east' }, 'b');
-  return addAction(l, 'hide', v, {}, 'c');
+  let l = addAction([], 'bleed', v, {}, {}, 'a');
+  l = addAction(l, 'move', v, { to: 'east' }, {}, 'b');
+  return addAction(l, 'hide', v, {}, {}, 'c');
 };
 const ids = (l: { uid: string }[]) => l.map((a) => a.uid).join('');
 
@@ -20,7 +20,7 @@ describe('draft', () => {
   });
   it('kopierar params', () => {
     const p = { to: 'east' };
-    const l = addAction([], 'move', v, p, 'x');
+    const l = addAction([], 'move', v, p, {}, 'x');
     p.to = 'west';
     expect(l[0]!.params.to).toBe('east');
   });
