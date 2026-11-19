@@ -20,11 +20,11 @@ export const TEST_MAP: MapTemplate = {
     { key: 'west_sea', name: 'West Sea' },
   ],
   cities: [
-    { key: 'north', name: 'North', isPort: true, seaRegions: ['north_sea'], stability: 4, masquerade: 3, intercept: 1, bloodFlow: 100 },
-    { key: 'east', name: 'East', isPort: false, seaRegions: [], stability: 3, masquerade: 4, intercept: 2, bloodFlow: 80 },
-    { key: 'west', name: 'West', isPort: false, seaRegions: [], stability: 2, masquerade: 2, intercept: 0, bloodFlow: 60 },
-    { key: 'south', name: 'South', isPort: true, seaRegions: ['north_sea', 'west_sea'], stability: 5, masquerade: 5, intercept: 3, bloodFlow: 150 },
-    { key: 'isle', name: 'Isle', isPort: true, seaRegions: ['west_sea'], stability: 1, masquerade: 1, intercept: 1, bloodFlow: 40 },
+    { key: 'north', name: 'North', isPort: true, seaRegions: ['north_sea'], stability: 4, masquerade: 3, intercept: 1, bloodFlow: 100, position: { x: 200, y: 100 } },
+    { key: 'east', name: 'East', isPort: false, seaRegions: [], stability: 3, masquerade: 4, intercept: 2, bloodFlow: 80, position: { x: 400, y: 100 } },
+    { key: 'west', name: 'West', isPort: false, seaRegions: [], stability: 2, masquerade: 2, intercept: 0, bloodFlow: 60, position: { x: 100, y: 250 } },
+    { key: 'south', name: 'South', isPort: true, seaRegions: ['north_sea', 'west_sea'], stability: 5, masquerade: 5, intercept: 3, bloodFlow: 150, position: { x: 300, y: 250 } },
+    { key: 'isle', name: 'Isle', isPort: true, seaRegions: ['west_sea'], stability: 1, masquerade: 1, intercept: 1, bloodFlow: 40, position: { x: 450, y: 350 } },
   ],
   adjacencies: [
     ['north', 'east'],

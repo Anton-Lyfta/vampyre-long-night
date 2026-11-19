@@ -11,6 +11,8 @@
 | V12 | Ser man en aktion som sedan misslyckas? | Ja. Synligheten räknas innan aktionen löses. |
 | V12 | Får målet automatiskt veta? | Nej, bara via intercept som alla andra. |
 | V13 | Syns världseffekter (t.ex. debattutfall) i vyn? | Inte än. Bara egna effekter tills effekter får en publik-markering. |
+| V17 | Visar kartan var någon sågs senast? | Nej. Bara om de sågs förra ronden **och** fortfarande är kvar där. |
+| V16 | Vet en Prince var den som riktar en aktion mot hens stad befinner sig? | Nej, bara vem och vad (om aktionen inte startar i staden). |
 
 ## V1. Vyn konstrueras från en allowlist
 `buildPlayerView` bygger varje fält explicit. Den kopierar aldrig ett state-objekt och tar bort fält, så ett nytt fält i `GameState` syns inte förrän någon lägger till det i vyn. Ett läck-test planterar nya fält och kontrollerar att de inte syns.
@@ -65,6 +67,30 @@ Bara spelarens egna effekter (`ownerId`) syns. Effekter utan ägare (debattutfal
 - Seed, id-räknare och stridernas trigger syns för ingen spelare.
 - Sabbat-spelare (sann sekt) ser Sabbat-baser och `sabbatIdentity` för dolda Archbishops (gd:637).
 - GM-vyn (`buildGmView`) är hela state och alla events, som kopior.
+
+## V15. Kartan (`PlayerView.map`, 2026-11-19)
+Huvudskärmens karta byggs av `buildMapView` (`src/view/map.ts`). Den visar alla städer med position (från kartmallen, `City.position`), grannar, controller, `contested` och controllerns **skenbara** sekt för färgen, så en stad som styrs av en dold Archbishop färgas som förklädnaden även för Sabbat-spelare. `connections` listar varje grannpar en gång.
+
+## V16. Vad en observation säger om position
+`action_observed` får fältet `at` (staden där utföraren är efter aktionen: `destination ?? startstad`) bara för observatörer som vet det:
+- vampyrer och Informant-minions i startstaden, startstadens controller, och destinationens controller (för förflyttningar).
+- Controllern av en **annan** målstad får ett eget `action_observed` utan `at`: hen vet vem och vad, inte var aktören är.
+
+Förflyttningar anger sin slutstad med `ActionDefinition.destination` (läst innan handlern körs, som `targets`). Utan `destination` antas utföraren stanna. `observerGroups` ger uppdelningen; `observersOfAction` är som förut unionen.
+
+## V17. Bara garanterad position, ingen "last known position"
+En annan spelares vampyr eller minion står på kartan bara om
+1. spelaren fick en observation med position (`action_observed` med `at`, eller `sighted`) under **senast upplösta ronden** (`round − 1` under inlämningen), och
+2. subjektet fortfarande är där nu: inte bränt, samma stad, och för minions samma ägare.
+
+Senaste observationen per subjekt gäller. Egen vampyr och egna minions syns alltid.
+**Kostnad, flaggad till Gustaf:** villkor 2 läses ur dold state. Om man såg X i A och X sedan lämnade osedd försvinner X från kartan, så spelaren kan dra slutsatsen att X flyttat. Alternativet (visa ändå) kan visa fel information.
+
+## V18. Resursraden (`PlayerView.resources`)
+`blood`, `vp`, antal egna artefakter (även de egna minions bär), antal egna minions och `ivoryTowerVotes`. Rösterna är titelns grundröster (gd:578, 582–585), 0 för icke-Camarilla, utan Buy Votes (som köps per rond i aktionslistan). Vampyrpanelen (namn, titel, Strength/Stealth/Intercept) finns redan i `me`.
+
+## V19. `sighted`-event för informationsaktioner
+Aktioner som avslöjar var någon är (Search, Bowl of Convergence, S.H.R.E.K NET) skapar `sighted` med `{ subject, at }` och mottagaren som publik. `subject` är `{ kind: 'vampire', playerId }` eller `{ kind: 'minion', minionId, ownerId }`. Kartan läser det på samma sätt som `action_observed`.
 
 ## Demo
 `createDemoGame()` och `createDemoRound()` ger en giltig kampanj på testkartan, med fem spelare (Inner Circle, Prince, Baron, dold Archbishop, utan titel) för gränssnittet. Justicars är utelämnade eftersom rollen inte finns i V1.

@@ -102,6 +102,7 @@ export function instantiateMap(map: MapTemplate): {
       problems: [],
       specials: [],
       masqueradeViolation: null,
+      ...(t.position ? { position: { x: t.position.x, y: t.position.y } } : {}),
     };
   }
   const seaRegions = {} as Record<SeaRegionId, SeaRegion>;

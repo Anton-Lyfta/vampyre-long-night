@@ -14,7 +14,8 @@ import {
   createRng,
   deriveSeed,
   minionUpkeep,
-  observersOfAction,
+  actionOrigin,
+  observerGroups,
   sortedIds,
   type Content,
   type GameState,
@@ -441,34 +442,44 @@ function resolveEntry(res: RoundResolution, id: EntryId, registry: ActionRegistr
 function observeAction(res: RoundResolution, entry: EntryRecord, def: ActionDefinition, content: Content, phase: PhaseId): void {
   const state = res.state as GameState;
   const targets = def.targets?.({ state, content, entry }) ?? {};
-  const observers = observersOfAction(state, content, {
+  const destination = def.destination?.({ state, content, entry }) ?? null;
+  const observed = {
     playerId: entry.playerId,
     performer: entry.action.performer,
     stealth: def.stealth,
     targetCities: targets.cities ?? [],
-  });
-  if (observers.kind === 'players' && observers.ids.length === 0) return;
+    destination,
+  };
+  const groups = observerGroups(state, content, observed);
   const performer: { [key: string]: Json } =
     entry.action.performer.kind === 'vampire'
       ? { kind: 'vampire', playerId: entry.playerId }
       : { kind: 'minion', minionId: entry.action.performer.minionId, controllerId: entry.playerId };
-  emit(
-    res,
-    phase,
-    'action_observed',
-    {
+  const at = destination ?? actionOrigin(state, observed);
+  const data = (withPosition: boolean): { [key: string]: Json } => {
+    const d: { [key: string]: Json } = {
       actionId: def.id,
-      performer,
+      performer: { ...performer },
       targets: {
         cities: [...(targets.cities ?? [])],
         players: [...(targets.players ?? [])],
         minions: [...(targets.minions ?? [])],
       },
-    },
-    undefined,
-    undefined,
-    observers,
-  );
+    };
+    if (withPosition && at !== null) d.at = at;
+    return d;
+  };
+  if (groups.kind === 'public') {
+    emit(res, phase, 'action_observed', data(true), undefined, undefined, groups);
+    return;
+  }
+  // Olika publiker som vet olika saker får olika events (V10, V16).
+  if (groups.located.length > 0) {
+    emit(res, phase, 'action_observed', data(true), undefined, undefined, { kind: 'players', ids: groups.located });
+  }
+  if (groups.targetOnly.length > 0) {
+    emit(res, phase, 'action_observed', data(false), undefined, undefined, { kind: 'players', ids: groups.targetOnly });
+  }
 }
 
 function applyOutcome(res: RoundResolution, entry: EntryRecord, outcome: ActionOutcome, phase: PhaseId): void {

@@ -31,6 +31,8 @@ Sidofynd som inte hör till pågående scope. Skriv var fyndet gjordes.
 - [ ] **Torpor publikt eller dolt?** Provisoriskt dolt (V4). Bekräfta mot hur Discord-spelet gjorde.
 - [ ] **Vy av en pausad strid:** `RoundResolution` under `awaitingCombat` har ingen spelarvy. Byggs med combat.
 - [ ] **Avslöjande aktioner:** Investigate, Search, Auspex m.fl. ska kunna göra dolda fält synliga för en spelare. Behöver en modell för "känd information" per spelare när aktionerna byggs.
+- [ ] **Kartan och strider/mål:** den som ser X attackera Y i A, eller är part i en strid, får inte Y/motståndaren på kartan än (V17). Bestäm när strid och Attack byggs. — hittad under: kartvyn (V15–V19)
+- [ ] **Move/Sail behöver `destination` och `targets`** när de byggs på riktigt, annars ser destinationens controller inte ankomsten och kartan placerar inte den resande (V16). — hittad under: kartvyn
 - [ ] **Motsägelse om controller-sikt:** gd:115 säger "target and originate", gd:498 "against or in". Tolkat som samma sak (startstad + målstäder).
 
 ## Karaktärsskapande (hittat under `docs/decisions/characters.md`)
