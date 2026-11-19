@@ -1,14 +1,14 @@
 # Beslut: actionkatalog och målval
 
 **Datum:** 2026-11-19
-**Status:** Fattade av Claude. K2 och K3 är frågor till Gustaf (ställda 2026-11-19) där motorn byggts på rekommendationen tills han svarar. Övriga är provisoriska standardval; ändra raden här och koden i `packages/engine/src/catalog/` om du vill annorlunda.
+**Status:** Fattade av Claude. K2 bekräftat av Gustaf 2026-11-19. K3 är en fråga till Gustaf (ställd 2026-11-19) där motorn byggts på rekommendationen tills han svarar. Övriga är provisoriska standardval; ändra raden här och koden i `packages/engine/src/catalog/` om du vill annorlunda.
 **Plan:** [`docs/engine/catalog-plan.md`](../engine/catalog-plan.md) · **Bygger på:** [`round.md`](round.md) (R3, R4, R6, R19), [`views.md`](views.md), [`001_motorbeslut.md`](../engine/001_motorbeslut.md) (M4–M7, M17)
 
 ## Snabböversikt: de beslut som påverkar spelet mest
 
 | # | Fråga | Valt |
 |---|---|---|
-| K2 ❓ | Räknas minionaktioner i "X/Y action points"? | Nej. AP = vampyrens slots. Varje minion visar sin egen action (1/1, 2/2 med Anarch Mission). |
+| K2 ✅ | Räknas minionaktioner i "X/Y action points"? | Nej. AP = vampyrens slots. Varje minion visar sin egen action (1/1, 2/2 med Anarch Mission). |
 | K3 ❓ | Vad visar dropdownen för mål "i samma stad" (Attack!, Diablerie, Dominate …)? | Alla vampyrer och andras minions. Är målet inte där misslyckas actionen och kostnaden återbetalas (gd:95). |
 | K4 | Räknas målval från platsen efter tidigare Move i listan? | Ja, som i skärmbilden (Move Snuk→Blorg, sedan Move Blorg→Smorg). |
 | K9 | Vad får (M)Presence utföra? | Valfri faction action utan titelkrav, även andra sekters. |
@@ -19,7 +19,8 @@
 **Beslut:** Meny, målval, kostnad och utkastanalys räknas från `PlayerView`, inte `GameState`. Servern (`analyzeSubmission`) bygger vyn och kör samma `analyzeDraft` som gränssnittet.
 **Motivering:** Gränssnittet och servern blir alltid överens, och ett målval kan aldrig avslöja något spelaren inte redan får veta.
 
-## K2. Action points (fråga till Gustaf)
+## K2. Action points
+**Status:** ✅ Bekräftat av Gustaf 2026-11-19: "Minions bör ha sin egen X/Y actions, korrekt. Minions har en action var, visa en ruta för varje minion spelaren har."
 **Beslut:** "X/Y action points used" räknar bara vampyrens slots (`ap`). Minionaktioner räknas per minion (`minionActions`: used/allowed). Trifle-aktionen och gratisaktioner (Give, Buy Votes, Bag of Gifts, The Evil Eye) visar 0 AP.
 **Motivering:** Regelboken ger varje minion en egen action utöver vampyrens budget (gd:217, M4). Skärmbilden visar 4/4 med en minion-Bleed bland tre vampyraktioner; det kan vara en förenkling i skissen.
 
