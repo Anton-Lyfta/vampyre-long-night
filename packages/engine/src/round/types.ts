@@ -15,6 +15,12 @@ export interface SubmittedAction {
   actionId: ActionId;
   performer: Performer;
   params?: { [key: string]: Json };
+  /**
+   * Stabilt id för entryn inom listan, satt av gränssnittet. Behövs bara när en
+   * annan entry pekar på den (Obfuscate "+4 stealth på action nr 3"), så att
+   * pekaren håller när spelaren drar om ordningen.
+   */
+  key?: string;
 }
 
 /** Sabbat schemes (C2): varje Sabbat-spelare föreslår en fördelning. */
@@ -68,7 +74,15 @@ export type ValidationCode =
   | 'after_ends_turn'
   | 'royal_privileges'
   | 'unaffordable'
-  | 'invalid_params';
+  | 'invalid_params'
+  /** Ett obligatoriskt val saknas (utkastet är inte klart). */
+  | 'incomplete'
+  /** Aktionen förbjuder förflyttning samma rond (Bottomless Wealth). */
+  | 'movement_forbidden'
+  /** Minionen följer med en annan aktion och får inte agera (Expansion, Second Tradition). */
+  | 'minion_locked'
+  /** Samma mål två gånger där regeln säger en gång per mål och rond. */
+  | 'max_per_target';
 
 export interface ValidationIssue {
   code: ValidationCode;

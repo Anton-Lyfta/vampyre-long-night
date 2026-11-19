@@ -40,9 +40,28 @@ Frågor som bara lead game designern kan svara på. Designern är inte tillgäng
 - [ ] **Avslöjande aktioner:** Investigate, Search, Auspex m.fl. ska kunna göra dolda fält synliga för en spelare. Behöver en modell för "känd information" per spelare när aktionerna byggs.
 - [ ] **Kartan och strider/mål:** den som ser X attackera Y i A, eller är part i en strid, får inte Y/motståndaren på kartan än (V17). Bestäm när strid och Attack byggs. — hittad under: kartvyn (V15–V19)
 - [ ] **Debatterna heter fortfarande Ivory Tower** i koden (V9, `content/titles.ts`) och ska byggas om till Vampiric Society där alla sekter röstar. Röstfrågorna står under "Olösta designerfrågor". — hittad under: kartvyn (V18)
-- [ ] **Move/Sail behöver `destination` och `targets`** när de byggs på riktigt, annars ser destinationens controller inte ankomsten och kartan placerar inte den resande (V16). — hittad under: kartvyn
+- [x] **Move/Sail behöver `destination` och `targets`** (V16). Löst i katalogen: `targets` läses från valen och `destination` härleds från `moves` (K21). — hittad under: kartvyn
 - [ ] **Motsägelse om controller-sikt:** gd:115 säger "target and originate", gd:498 "against or in". Tolkat som samma sak (startstad + målstäder).
 
 ## Karaktärsskapande (hittat under `docs/decisions/characters.md`)
 - [ ] **Ring of Tremere är avstängd** (K14): den ligger inte i slumppoolen eftersom man ska välja disciplin när man får den (gd:420). Hitta ett sätt att hantera valet (startartefakt, Search, My treasure, stöld) och slå på den igen.
 - [ ] **Toreador-obsession** (C8) dras fortfarande inte vid kampanjstart.
+
+## Actionkatalog (hittat under `docs/decisions/catalog.md`)
+- [ ] **Bundna discipliner:** Ring of Tremere och (M)Thaumaturgy-skapade artefakter har ingen aktion i katalogen; inte heller artefaktaktioner som (M)Thaumaturgy gett permanent (`grantedArtifactActions`) (K15).
+- [ ] **Hide and Spy** ska spärra minionens action nästa rond (gd:296). Kräver att förra rondens aktioner sparas.
+- [ ] **Martinelli's Ring** ska ta bort Dementation så länge man bär den (gd:395).
+- [ ] **(M)Presence-stealth** ska vara den valda aktionens; observationen läser idag `def.stealth` (0) (K9).
+- [ ] **Känd information i målval:** när motorn vet vad en spelare garanterat vet (kartvyn), sortera kända mål "i samma stad" överst (K3).
+- [ ] **Regelbokens rubrik "Bottles wealth of the camarilla"** (gd:1047) ska vara Bottomless Wealth. "Presens"/"Pressens" och "Visisetude" är också felstavade.
+- [ ] **Dold aktör per aktion:** Gustaf 2026-11-19: vissa actions har en gömd aktör (man får veta att något hänt men inte vem, om man inte lyckas med en rullning), och det skiljer sig mellan actions. Regelboken säger inte vilka. Lägg ett fält på `ActionDefinition` (t.ex. `actorHidden`) i katalogen och låt observationen (`observersOfAction`) läsa det, när listan över vilka actions det gäller finns.
+
+### Olösta designfrågor från actionkatalogen (väntar på lead game designer)
+Designern är inte tillgänglig live (Gustaf 2026-11-19). Motorn bygger på det provisoriska valet tills vidare.
+- [ ] **Unresolved: mål "i samma stad" (K3).** Ska dropdownen för Attack!, Diablerie, Dominate m.fl. lista alla vampyrer och minions (provisoriskt, läcker inga positioner) eller bara de spelaren vet är där?
+- [ ] **Unresolved: (M) Presence (K9).** Får den utföra andra sekters faction actions utan titelkrav? Provisoriskt ja.
+- [ ] **Unresolved: Thaumaturgy bas (K10).** Får man ge vilken disciplin som helst, eller bara en man själv har? Provisoriskt vilken som helst.
+- [ ] **Unresolved: upprepade val (K11).** Får Anarch Revolt, Build on the Master's Kingdom och Organize Resistance välja samma effekt flera gånger? Provisoriskt ja.
+- [ ] **Unresolved: not-fixed-actions** (`docs/engine/not-fixed-actions.md`): Wait and Strike, Dementation, (M) Dementation, Investigate, Investigate Eye, Troublemaker, Orders from the Top, Crown of Malkav och Hunt for Me ska byggas om så att de kan lösas utan GM.
+- [ ] **Unresolved: missions är borttagna ur spelet** (Gustaf 2026-11-19). Recruit an Archon, Archon-loyalty (gd:332) och Justicar-VP behöver nya regler.
+- [ ] **Unresolved: Chimerstry och (M) Chimerstry** byggs om.

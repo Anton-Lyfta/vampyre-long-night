@@ -1,3 +1,4 @@
+import type { ActionRequirements, CatalogContext, ParamSpec, ProjectedMove } from '../catalog/types.js';
 import type { Content, Faction, GameState, MinionId, MinionType, Mutable, Player, Rng, Title, WorkingState } from './deps.js';
 import type { ActionId, Audience, EntryRecord, Json, SubmittedAction } from './types.js';
 import type { CityId, PlayerId } from './deps.js';
@@ -27,12 +28,11 @@ export interface ActionContext {
   resolveImmediately(count: number): void;
 }
 
-export interface EligibilityContext {
-  state: GameState;
-  content: Content;
-  player: Player;
-  action: SubmittedAction;
-}
+/**
+ * Kontext för kostnad, inkomst och extra kontroller. Räknas från spelarens vy
+ * (se catalog/types.ts), så att gränssnittet och servern får samma svar.
+ */
+export type EligibilityContext = CatalogContext;
 
 export interface TargetContext {
   state: GameState;
@@ -53,32 +53,58 @@ export interface ActionDefinition {
   /** Vem som utför aktionen. Minionaktioner kan bara utföras av minions (A6). */
   performer: 'vampire' | 'minion';
   stealth: ActionStealth;
-  cost: number | ((ctx: EligibilityContext) => number);
+  /** Blood-kostnad. Variabel kostnad räknas från valen (params) och spelarens vy. */
+  cost: number | ((ctx: CatalogContext) => number);
+  /** Kostnaden beror på valen även när den inte är 0 utan val (Expansion). Styr `costVaries` i menyn. */
+  variableCost?: boolean;
+  /**
+   * Blood aktionen garanterat ger spelaren (Bottomless Wealth +250). Bara
+   * deterministisk inkomst; slumpad (Bleed, Esbat, Bloodspot Dice) anges inte.
+   */
+  income?: number | ((ctx: CatalogContext) => number);
   /** Första Trifle-aktionen per rond kostar ingen slot i budgeten. */
-  trifle?: boolean | ((player: Player) => boolean);
+  trifle?: boolean | ((me: { title: Title | null }) => boolean);
   /** 'free' = räknas aldrig mot budgeten (Give, Buy Votes). */
   slot?: 'normal' | 'free';
   /** Max antal per rond för samma spelare ("once per turn"). */
   maxPerRound?: number;
+  /** "En gång per rond och <param>" (Build My Kingdom per stad, Punish Treason per vampyr). */
+  oncePerRoundPer?: string;
   /** Krav på titel (effektiv titel, se effectiveTitles). */
   titles?: Title[];
   /** Krav på sekt (effektiv sekt, se effectiveFactions). */
   factions?: Faction[];
   /** För minionaktioner: vilka typer som får utföra den. */
   minionTypes?: MinionType[];
+  /** Minionaktion som Vestment of Vileness-zombien får göra (gd:402). */
+  zombie?: boolean;
+  /** Övriga krav: disciplin, artefakt, titellös, dold/exponerad Archbishop. */
+  requires?: ActionRequirements;
   /** Får utföras av vampyren i torpor (Awaken, Giants' Blood, Soul Gem). */
   allowedInTorpor?: boolean;
   /** Måste vara spelarens enda vampyraktion (Go Anarch). */
   exclusive?: boolean;
   /** Inga fler vampyraktioner efter denna (Hide). */
   endsTurn?: boolean;
+  /** Vampyren får inte förflytta sig samma rond (Bottomless Wealth). */
+  forbidsMovement?: boolean;
   /** Ger en namngiven minion (params.minionId) +1 minionaktion (Anarch Mission). */
   grantsMinionAction?: boolean;
-  /** Extra kontroller (diskipliner, artefakter, mål). Returnerar felmeddelande eller null. */
-  eligible?: (ctx: EligibilityContext) => string | null;
+  /**
+   * Valen spelaren gör, i ordning. En funktion när senare val beror på tidigare
+   * (Organize Resistance: antal val = den brända minionens level).
+   */
+  params?: readonly ParamSpec[] | ((ctx: CatalogContext) => readonly ParamSpec[]);
+  /** Kontroller som spänner över flera val. Returnerar felmeddelande eller null. */
+  eligible?: (ctx: CatalogContext) => string | null;
+  /** Var aktören (eller dess minions) hamnar om aktionen lyckas. Används för målval längre ner i listan. */
+  moves?: (ctx: CatalogContext) => ProjectedMove[];
+  /** Egna minions som följer med och inte får agera denna rond (Expansion, Second Tradition). */
+  locksMinions?: (ctx: CatalogContext) => MinionId[];
   /**
    * Aktionens mål, läst innan handlern körs. Avgör controller-sikt (målstädernas
-   * controller, gd:115) och vad observatörer får veta (M17). Utelämnad = inga mål.
+   * controller, gd:115) och vad observatörer får veta (M17). Utelämnad = målen
+   * läses från params (stad-, vampyr- och minionval).
    */
   targets?: (ctx: TargetContext) => ActionTargets;
   /**
@@ -107,30 +133,41 @@ export function createRegistry(defs: ActionDefinition[]): ActionRegistry {
  * Titlar vars aktioner spelaren får använda. En dold Archbishop får använda både
  * sina egna och sin förklädnads (gd:635); en exponerad bara Archbishop.
  */
-export function effectiveTitles(player: Player): Title[] {
+export function effectiveTitles(player: Pick<Player, 'title' | 'disguise'>): Title[] {
   if (!player.title) return [];
   if (player.title === 'archbishop' && player.disguise) return ['archbishop', player.disguise.title];
   return [player.title];
 }
 
 /** Sekter vars aktioner spelaren får använda. Dold Archbishop: Sabbat + förklädnadens sekt. */
-export function effectiveFactions(player: Player): Faction[] {
+export function effectiveFactions(player: Pick<Player, 'title' | 'disguise' | 'faction'>): Faction[] {
   if (player.title === 'archbishop' && player.disguise) {
     return player.disguise.faction === player.faction ? [player.faction] : [player.faction, player.disguise.faction];
   }
   return [player.faction];
 }
 
-export function actionCost(def: ActionDefinition, ctx: EligibilityContext): number {
+export function actionCost(def: ActionDefinition, ctx: CatalogContext): number {
   return typeof def.cost === 'function' ? def.cost(ctx) : def.cost;
 }
 
-export function isTrifle(def: ActionDefinition, player: Player): boolean {
+export function actionIncome(def: ActionDefinition, ctx: CatalogContext): number {
+  if (def.income === undefined) return 0;
+  return typeof def.income === 'function' ? def.income(ctx) : def.income;
+}
+
+export function actionParams(def: ActionDefinition, ctx: CatalogContext): readonly ParamSpec[] {
+  if (!def.params) return [];
+  return typeof def.params === 'function' ? def.params(ctx) : def.params;
+}
+
+export function isTrifle(def: ActionDefinition, player: { title: Title | null }): boolean {
   return typeof def.trifle === 'function' ? def.trifle(player) : def.trifle === true;
 }
 
 // ---------------------------------------------------------------------------
-// Stubbar. Bara de metadata som skelettets budget- och valideringsregler
+// Skelettets stubbar (används av rondens tester). Spelets riktiga katalog är
+// ACTION_CATALOG i src/catalog/. Bara de metadata som skelettets budget- och valideringsregler
 // behöver; effekterna byggs i steg 3. Varje stubb löser sig utan effekt.
 
 const stubResolve = (): ActionOutcome => ({ status: 'resolved' });
@@ -150,7 +187,7 @@ export const SKELETON_ACTIONS: ActionRegistry = createRegistry([
     category: 'personal',
     performer: 'vampire',
     stealth: 2,
-    cost: ({ player }) => (player.title === 'justicar' ? 5 : 10),
+    cost: ({ view }) => (view.me.title === 'justicar' ? 5 : 10),
     trifle: (p) => p.title === 'justicar',
     resolve: stubResolve,
   },
@@ -248,11 +285,10 @@ export const SKELETON_ACTIONS: ActionRegistry = createRegistry([
     cost: 15,
     factions: ['anarch'],
     grantsMinionAction: true,
-    eligible: ({ state, player, action }) => {
+    eligible: ({ view, action }) => {
       const id = minionIdParam(action);
       if (!id) return 'Anarch Mission kräver params.minionId';
-      const m = state.minions[id as MinionId];
-      return m && m.owner.kind === 'player' && m.owner.id === player.id ? null : 'Anarch Mission måste namnge en egen minion';
+      return view.me.minions.some((m) => m.id === id) ? null : 'Anarch Mission måste namnge en egen minion';
     },
     resolve: stubResolve,
   },
