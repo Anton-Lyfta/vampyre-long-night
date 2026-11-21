@@ -2,7 +2,7 @@
  * Porten mot motorns actionkatalog och kartvy. Allt räknas från spelarens
  * `PlayerView` (motorns `listAvailableActions`, `nextParam`, `analyzeDraft`),
  * så samma kod fungerar i klienten och på servern och kan aldrig visa dold
- * information. Bara inlämningen (`submit`) behöver något mer än vyn.
+ * information. Bara inlämningen (`submit`/`unlock`) behöver något mer än vyn.
  */
 import {
   ACTION_CATALOG,
@@ -12,6 +12,7 @@ import {
   projectPositions,
   type ActionRegistry,
   type BudgetBreakdown,
+  type Json,
   type Content,
   type MinionId,
   type ParamRequest,
@@ -25,6 +26,7 @@ import type {
   DraftAnalysis,
   DraftExtras,
   MainScreenData,
+  Params,
   PerformerRef,
   PlayerScreenPort,
   RoyalPrivilegeInfo,
@@ -36,9 +38,11 @@ export interface ViewPortOptions {
   content: Content;
   registry?: ActionRegistry;
   /** Lämnar in listan. Lokalt: motorns submitActions; i spelet: servern. */
-  submit: (actions: SubmittedAction[], extras: DraftExtras) => ConfirmResult;
-  unlock: () => void;
+  submit: (actions: SubmittedAction[], extras: DraftExtras) => ConfirmResult | Promise<ConfirmResult>;
+  unlock: () => void | Promise<void>;
   isLocked: () => boolean;
+  /** Redan inlämnad lista i ronden (från servern efter omladdning). */
+  submitted?: { actions: readonly SubmittedAction[]; royalPrivilegesToSpend: number } | null;
 }
 
 export function toSubmitted(a: Pick<DraftAction, 'uid' | 'actionId' | 'performer' | 'params'>): SubmittedAction {
@@ -102,6 +106,49 @@ export function royalPrivilegeWarnings(rp: RoyalPrivilegeInfo): string[] {
     return [`Du spenderar ${rp.spending} Royal Privileges men listan behöver ${rp.needed}`];
   }
   return [];
+}
+
+/** Visningstexten för ett val, som ActionComposer sätter den när spelaren väljer. */
+function labelFor(step: TargetStep, value: Json): string {
+  if (step.kind === 'number') return String(value);
+  if (step.kind === 'text') return `”${String(value)}”`;
+  if (Array.isArray(value)) {
+    return step.options.filter((o) => value.includes(o.value)).map((o) => o.label).join(' + ') || 'inga';
+  }
+  return step.options.find((o) => o.value === value)?.label ?? String(value);
+}
+
+/**
+ * Bygger tillbaka en inlämnad lista till rader med visningstexter (P7). Servern
+ * sparar bara motorns `SubmittedAction`; texterna räknas fram igen genom att
+ * spela upp målvalen (`nextParam`) mot vyn, val för val, i listans ordning.
+ * Entryns `key` blir radens uid, så pekare mellan rader håller.
+ */
+export function restoreDraft(
+  view: PlayerView,
+  content: Content,
+  actions: readonly SubmittedAction[],
+  registry: ActionRegistry = ACTION_CATALOG,
+): DraftAction[] {
+  const out: DraftAction[] = [];
+  actions.forEach((a, i) => {
+    const params = (a.params ?? {}) as Record<string, Json>;
+    const performer: PerformerRef = a.performer.kind === 'vampire' ? { kind: 'vampire' } : { kind: 'minion', minionId: a.performer.minionId };
+    const uid = a.key ?? `restored-${i + 1}`;
+    const paramLabels: Record<string, string> = {};
+    const partial: Record<string, Json> = {};
+    const before = out.map(toSubmitted);
+    for (let guard = 0; guard < 20; guard++) {
+      const list = [...before, { ...a, params: { ...partial } }];
+      const r = nextParam(view, content, list, list.length - 1, registry);
+      if (!r || !(r.key in params)) break;
+      const value = params[r.key]!;
+      paramLabels[r.key] = labelFor(toStep(r), value);
+      partial[r.key] = value;
+    }
+    out.push({ uid, actionId: a.actionId, performer, params: params as Params, paramLabels });
+  });
+  return out;
 }
 
 export function createViewPort(opts: ViewPortOptions): PlayerScreenPort {
@@ -189,8 +236,13 @@ export function createViewPort(opts: ViewPortOptions): PlayerScreenPort {
       return r ? toStep(r) : null;
     },
     analyze,
-    confirm: (draft, extras) => opts.submit(draft.map(toSubmitted), { royalPrivilegesToSpend: extras?.royalPrivilegesToSpend ?? 0 }),
-    unlock: opts.unlock,
+    confirm: async (draft, extras) =>
+      opts.submit(draft.map(toSubmitted), { royalPrivilegesToSpend: extras?.royalPrivilegesToSpend ?? 0 }),
+    unlock: async () => {
+      await opts.unlock();
+    },
     isLocked: opts.isLocked,
+    initialDraft: () => (opts.submitted ? restoreDraft(view, content, opts.submitted.actions, registry) : []),
+    initialExtras: () => ({ royalPrivilegesToSpend: opts.submitted?.royalPrivilegesToSpend ?? 0 }),
   };
 }

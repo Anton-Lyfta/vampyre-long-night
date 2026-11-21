@@ -3,7 +3,7 @@
  *
  * Komponenterna ser aldrig `GameState` eller `PlayerView`. All data går genom
  * `PlayerScreenPort`, som i utveckling kör motorn lokalt (`localPort.ts`) och i
- * produktion ska prata med servern (SPEC B1: motorn körs bara på servern).
+ * spelet pratar med servern (`serverPort.ts`; SPEC B1: motorn körs bara på servern).
  */
 
 export type FactionKey = 'camarilla' | 'anarch' | 'sabbat';
@@ -219,9 +219,13 @@ export interface PlayerScreenPort {
   ): TargetStep | null;
   /** `extras` saknas = inga Royal Privileges spenderas. */
   analyze(draft: readonly DraftAction[], extras?: DraftExtras): DraftAnalysis;
-  /** Lämnar in listan, med de Royal Privileges som spenderas. */
-  confirm(draft: readonly DraftAction[], extras?: DraftExtras): ConfirmResult;
-  /** Låser upp en inlämnad lista. */
-  unlock(): void;
+  /** Lämnar in listan, med de Royal Privileges som spenderas. Servern validerar och låser. */
+  confirm(draft: readonly DraftAction[], extras?: DraftExtras): Promise<ConfirmResult>;
+  /** Låser upp en inlämnad lista. Listan finns kvar. */
+  unlock(): Promise<void>;
   isLocked(): boolean;
+  /** Listan som redan är inlämnad i ronden (efter omladdning), annars tom. */
+  initialDraft(): DraftAction[];
+  /** Royal Privileges i den inlämnade listan. */
+  initialExtras(): DraftExtras;
 }

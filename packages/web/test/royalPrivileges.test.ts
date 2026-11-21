@@ -24,7 +24,7 @@ describe('Royal Privileges i analysen', () => {
     expect(a.apTotal).toBe(4);
   });
 
-  it('spenderad Royal Privilege ger +1 AP och låter en femte action lämnas in', () => {
+  it('spenderad Royal Privilege ger +1 AP och låter en femte action lämnas in', async () => {
     const port = createDemoPort('prince');
     const five = bleeds(5);
     expect(port.analyze(five).canConfirm).toBe(false);
@@ -33,12 +33,12 @@ describe('Royal Privileges i analysen', () => {
     expect([a.apUsed, a.apTotal]).toEqual([5, 5]);
     expect(a.canConfirm).toBe(true);
     expect(a.warnings).toEqual([]);
-    expect(port.confirm(five, { royalPrivilegesToSpend: 1 })).toEqual({ ok: true, errors: [] });
+    expect(await port.confirm(five, { royalPrivilegesToSpend: 1 })).toEqual({ ok: true, errors: [] });
     expect(port.isLocked()).toBe(true);
   });
 
-  it('motorn avvisar inlämningen utan Royal Privilege', () => {
-    const res = createDemoPort('prince').confirm(bleeds(5));
+  it('motorn avvisar inlämningen utan Royal Privilege', async () => {
+    const res = await createDemoPort('prince').confirm(bleeds(5));
     expect(res.ok).toBe(false);
   });
 

@@ -85,3 +85,16 @@ Beslut i `docs/decisions/effects.md`, kod i `packages/engine/src/effects/`.
 ## Spelarens gränssnitt (hittat under Royal Privileges i UI)
 - [ ] **Royal Privileges förbrukas även när de inte ger en action.** Motorn (`royalPrivilegesSpent`) drar det begärda antalet även om ett tak (torpor, Invite to the Camarilla) gör att de inte ger någon action. UI:t stoppar plus-knappen vid `maxUseful` och varnar, men motorn borde kanske klampa mot taket. Logikfråga till Gustaf.
 - [ ] **Inlämnade Royal Privileges vid omladdning.** När serverporten returnerar en inlämnad lista måste den också returnera `royalPrivilegesToSpend`, annars visar panelen 0. Hör till serverkopplingen.
+
+## Spelservern (hittat under `docs/backend/server-plan.md`, beslut P1–P15)
+- [ ] **GM-gränssnitt i webben.** Idag skapas kampanjer, konton och upplösning med `packages/server/scripts/gm.ts`.
+- [ ] **Pausad upplösning (strid) kan inte återupptas.** `gm_resolve` sparar `RoundResolution` och sätter ronden till `suspended`, men det finns ingen operation för interrupt-svar och `continueResolution`. Byggs med combat (B6).
+- [ ] **Automatisk upplösning vid deadline** (M10): kräver `pg_cron` + `pg_net` eller en schemalagd funktion. Idag löser GM.
+- [ ] **Realtime i stället för polling** (P6). Kräver en tabell per spelare som får läsas, t.ex. en "ny rond"-signal utan innehåll.
+- [ ] **Content per kampanj** (B4): server och klient använder `DEFAULT_CONTENT`.
+- [ ] **Invites:** spelare kopplas med e-post av GM (`gm_assign`). Den gamla `invites`-tabellen används inte.
+- [ ] **Osparat utkast mellan omladdningar:** bara den inlämnade listan finns kvar. Ett halvfärdigt utkast försvinner.
+- [ ] **Gamla tabeller i Supabase** (`characters`, `rounds`, `actions`, `combats` m.fl.) och funktionerna `submit_action`, `gm_advance_round`, `create_campaign_with_gm` används inte och läcker via RLS om de fylls. Ta bort eller stäng när Gustaf ok:at.
+- [ ] **Migrationerna från juni 2026** finns bara i projektet (`supabase_migrations.schema_migrations`), inte som filer. Hämta in dem så att `supabase db reset` fungerar lokalt.
+- [ ] **Deadline syns inte på första sidan** (gapanalysen 2A/11). Servern skickar `window.deadline` i `screen`, men UI:t visar den inte.
+- [ ] **Latent fel i `ActionComposer`:** text-steget anropar `onDone` två gånger (rad ~98). Ingen action har text-parametrar just nu (Chimerstry är borttagen), så det går inte att återskapa i gränssnittet. Kontrollera när en text-action kommer tillbaka.

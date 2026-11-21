@@ -84,6 +84,10 @@ function DraftRow({ action, info, index, count, locked, onRemove, onShift }: Row
   );
 }
 
+function errorMessage(e: unknown): string {
+  return e instanceof Error ? e.message : 'Något gick fel';
+}
+
 /**
  * Royal Privileges (gd:923): +1 action per spenderad. Visas bara för den som har några.
  * Plus stoppar vid `maxUseful` (fler ger ingen action men förbrukas ändå).
@@ -128,10 +132,12 @@ function RoyalPrivilegeControl({
 }
 
 export function ActionPanel({ port, round }: { port: PlayerScreenPort; round: number }) {
-  const [draft, setDraft] = useState<DraftAction[]>([]);
+  // Efter omladdning: den lista som redan är inlämnad i ronden.
+  const [draft, setDraft] = useState<DraftAction[]>(() => port.initialDraft());
   const [locked, setLockedState] = useState(port.isLocked());
   const [confirmErrors, setConfirmErrors] = useState<string[]>([]);
-  const [royalPrivilegesToSpend, setRoyalPrivilegesToSpend] = useState(0);
+  const [busy, setBusy] = useState(false);
+  const [royalPrivilegesToSpend, setRoyalPrivilegesToSpend] = useState(() => port.initialExtras().royalPrivilegesToSpend);
   const extras = useMemo(() => ({ royalPrivilegesToSpend }), [royalPrivilegesToSpend]);
   const analysis = useMemo(() => port.analyze(draft, extras), [port, draft, extras]);
   const sensors = useSensors(
@@ -206,9 +212,18 @@ export function ActionPanel({ port, round }: { port: PlayerScreenPort; round: nu
           <p>Actions inlämnade.</p>
           <button
             type="button"
-            onClick={() => {
-              port.unlock();
-              setLockedState(false);
+            disabled={busy}
+            onClick={async () => {
+              setBusy(true);
+              try {
+                await port.unlock();
+                setConfirmErrors([]);
+                setLockedState(false);
+              } catch (e) {
+                setConfirmErrors([errorMessage(e)]);
+              } finally {
+                setBusy(false);
+              }
             }}
           >
             Ändra
@@ -218,12 +233,19 @@ export function ActionPanel({ port, round }: { port: PlayerScreenPort; round: nu
         <button
           type="button"
           className="confirm"
-          disabled={!analysis.canConfirm}
+          disabled={!analysis.canConfirm || busy}
           title={overAp ? 'För många actions för dina action points' : undefined}
-          onClick={() => {
-            const res = port.confirm(draft, extras);
-            setConfirmErrors(res.errors);
-            if (res.ok) setLockedState(true);
+          onClick={async () => {
+            setBusy(true);
+            try {
+              const res = await port.confirm(draft, extras);
+              setConfirmErrors(res.errors);
+              if (res.ok) setLockedState(true);
+            } catch (e) {
+              setConfirmErrors([errorMessage(e)]);
+            } finally {
+              setBusy(false);
+            }
           }}
         >
           Confirm actions
