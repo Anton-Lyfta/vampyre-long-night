@@ -11,6 +11,7 @@ import {
   nextParam,
   projectPositions,
   type ActionRegistry,
+  type BudgetBreakdown,
   type Content,
   type MinionId,
   type ParamRequest,
@@ -22,9 +23,11 @@ import type {
   ConfirmResult,
   DraftAction,
   DraftAnalysis,
+  DraftExtras,
   MainScreenData,
   PerformerRef,
   PlayerScreenPort,
+  RoyalPrivilegeInfo,
   TargetStep,
 } from './model';
 
@@ -33,7 +36,7 @@ export interface ViewPortOptions {
   content: Content;
   registry?: ActionRegistry;
   /** Lämnar in listan. Lokalt: motorns submitActions; i spelet: servern. */
-  submit: (actions: SubmittedAction[]) => ConfirmResult;
+  submit: (actions: SubmittedAction[], extras: DraftExtras) => ConfirmResult;
   unlock: () => void;
   isLocked: () => boolean;
 }
@@ -72,6 +75,35 @@ export function titleLabel(view: PlayerView, content: Content): string | null {
   return `${name}${ofDomain}${disguise}`;
 }
 
+/**
+ * Royal Privileges för panelen, räknat från motorns budget.
+ * `maxUseful`: med ett tak (torpor, Invite) ger bara de som ryms under taket en action.
+ * `needed`: så många som krävs för att listans vampyraktioner ska rymmas.
+ */
+export function royalPrivilegeInfo(
+  available: number,
+  spending: number,
+  budget: BudgetBreakdown,
+  apUsed: number,
+): RoyalPrivilegeInfo {
+  const withoutRp = budget.base + budget.sabbatScheme + budget.bonus;
+  const maxUseful = budget.cap === null ? available : Math.max(0, Math.min(available, budget.cap - withoutRp));
+  const totalWithoutRp = budget.cap === null ? withoutRp : Math.min(withoutRp, budget.cap);
+  const needed = Math.min(maxUseful, Math.max(0, apUsed - totalWithoutRp));
+  return { available, spending, maxUseful, needed };
+}
+
+/** Varningar när spelaren spenderar Royal Privileges som inte ger något. */
+export function royalPrivilegeWarnings(rp: RoyalPrivilegeInfo): string[] {
+  if (rp.spending > rp.maxUseful) {
+    return [`Bara ${rp.maxUseful} av ${rp.spending} Royal Privileges ger en extra action den här ronden, men alla förbrukas`];
+  }
+  if (rp.spending > rp.needed) {
+    return [`Du spenderar ${rp.spending} Royal Privileges men listan behöver ${rp.needed}`];
+  }
+  return [];
+}
+
 export function createViewPort(opts: ViewPortOptions): PlayerScreenPort {
   const { view, content } = opts;
   const registry = opts.registry ?? ACTION_CATALOG;
@@ -92,9 +124,11 @@ export function createViewPort(opts: ViewPortOptions): PlayerScreenPort {
     return here ? `${name} i ${cityName(here)}` : name;
   };
 
-  const analyze = (draft: readonly DraftAction[]): DraftAnalysis => {
+  const analyze = (draft: readonly DraftAction[], extras?: DraftExtras): DraftAnalysis => {
     const actions = draft.map(toSubmitted);
-    const a = analyzeDraft(view, content, { actions, royalPrivilegesToSpend: 0 }, { registry });
+    const spending = extras?.royalPrivilegesToSpend ?? 0;
+    const a = analyzeDraft(view, content, { actions, royalPrivilegesToSpend: spending }, { registry });
+    const rp = royalPrivilegeInfo(view.me.royalPrivileges, spending, a.budget, a.ap.used);
     const byIndex = new Map(a.entries.map((e) => [e.index, e]));
     return {
       entries: draft.map((d, i) => {
@@ -110,6 +144,7 @@ export function createViewPort(opts: ViewPortOptions): PlayerScreenPort {
       }),
       apUsed: a.ap.used,
       apTotal: a.ap.total,
+      royalPrivileges: rp,
       minionActions: view.me.minions.map((m) => {
         const c = a.minionActions.find((x) => x.minionId === m.id);
         return { minionId: m.id, name: m.name, used: c?.used ?? 0, allowed: c?.allowed ?? 1 };
@@ -117,7 +152,7 @@ export function createViewPort(opts: ViewPortOptions): PlayerScreenPort {
       totalCost: a.totalCost,
       totalIncome: a.totalIncome,
       errors: a.errors.filter((e) => e.entryIndex === undefined).map((e) => e.message),
-      warnings: a.warnings.map((w) => w.message),
+      warnings: [...a.warnings.map((w) => w.message), ...royalPrivilegeWarnings(rp)],
       canConfirm: a.canConfirm,
     };
   };
@@ -154,7 +189,7 @@ export function createViewPort(opts: ViewPortOptions): PlayerScreenPort {
       return r ? toStep(r) : null;
     },
     analyze,
-    confirm: (draft) => opts.submit(draft.map(toSubmitted)),
+    confirm: (draft, extras) => opts.submit(draft.map(toSubmitted), { royalPrivilegesToSpend: extras?.royalPrivilegesToSpend ?? 0 }),
     unlock: opts.unlock,
     isLocked: opts.isLocked,
   };

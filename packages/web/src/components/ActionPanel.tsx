@@ -11,7 +11,7 @@ import {
 import { SortableContext, sortableKeyboardCoordinates, useSortable, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { addAction, moveAction, removeAction, shiftAction } from '../screen/draft';
-import type { DraftAction, DraftEntryInfo, PlayerScreenPort } from '../screen/model';
+import type { DraftAction, DraftEntryInfo, PlayerScreenPort, RoyalPrivilegeInfo } from '../screen/model';
 import { ActionComposer } from './ActionComposer';
 
 function Blood({ amount, income }: { amount: number | null; income?: boolean }) {
@@ -84,11 +84,56 @@ function DraftRow({ action, info, index, count, locked, onRemove, onShift }: Row
   );
 }
 
+/**
+ * Royal Privileges (gd:923): +1 action per spenderad. Visas bara för den som har några.
+ * Plus stoppar vid `maxUseful` (fler ger ingen action men förbrukas ändå).
+ */
+function RoyalPrivilegeControl({
+  rp,
+  locked,
+  onChange,
+}: {
+  rp: RoyalPrivilegeInfo;
+  locked: boolean;
+  onChange: (n: number) => void;
+}) {
+  if (rp.available === 0) return null;
+  return (
+    <div className="royal-privileges" data-testid="royal-privileges">
+      <span>
+        Royal Privileges: {rp.spending}/{rp.available} spenderas
+      </span>
+      {!locked && (
+        <>
+          <button
+            type="button"
+            aria-label="Spendera en Royal Privilege färre"
+            disabled={rp.spending === 0}
+            onClick={() => onChange(rp.spending - 1)}
+          >
+            −
+          </button>
+          <button
+            type="button"
+            aria-label="Spendera en Royal Privilege för en extra action"
+            disabled={rp.spending >= rp.maxUseful}
+            onClick={() => onChange(rp.spending + 1)}
+          >
+            +
+          </button>
+        </>
+      )}
+    </div>
+  );
+}
+
 export function ActionPanel({ port, round }: { port: PlayerScreenPort; round: number }) {
   const [draft, setDraft] = useState<DraftAction[]>([]);
   const [locked, setLockedState] = useState(port.isLocked());
   const [confirmErrors, setConfirmErrors] = useState<string[]>([]);
-  const analysis = useMemo(() => port.analyze(draft), [port, draft]);
+  const [royalPrivilegesToSpend, setRoyalPrivilegesToSpend] = useState(0);
+  const extras = useMemo(() => ({ royalPrivilegesToSpend }), [royalPrivilegesToSpend]);
+  const analysis = useMemo(() => port.analyze(draft, extras), [port, draft, extras]);
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 4 } }),
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
@@ -132,6 +177,7 @@ export function ActionPanel({ port, round }: { port: PlayerScreenPort; round: nu
         <div className={overAp ? 'ap over' : 'ap'} data-testid="ap-used">
           {analysis.apUsed}/{analysis.apTotal} action points used
         </div>
+        <RoyalPrivilegeControl rp={analysis.royalPrivileges} locked={locked} onChange={setRoyalPrivilegesToSpend} />
         {analysis.minionActions.map((m) => (
           <div
             key={m.minionId}
@@ -175,7 +221,7 @@ export function ActionPanel({ port, round }: { port: PlayerScreenPort; round: nu
           disabled={!analysis.canConfirm}
           title={overAp ? 'För många actions för dina action points' : undefined}
           onClick={() => {
-            const res = port.confirm(draft);
+            const res = port.confirm(draft, extras);
             setConfirmErrors(res.errors);
             if (res.ok) setLockedState(true);
           }}

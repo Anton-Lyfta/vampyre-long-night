@@ -150,11 +150,34 @@ export interface MinionActionCount {
   allowed: number;
 }
 
+/** Royal Privileges (gd:923): en Prince kan spendera 1 för en extra action i ronden. */
+export interface RoyalPrivilegeInfo {
+  /** Hur många spelaren har. 0 = ingen kontroll ska visas. */
+  available: number;
+  /** Hur många listan spenderar (redan inräknat i `apTotal`). */
+  spending: number;
+  /**
+   * Högst så många ger faktiskt en extra action. Lägre än `available` när
+   * budgeten har ett tak (torpor, Invite to the Camarilla): fler spenderade
+   * förbrukas ändå vid upplösningen men ger inget.
+   */
+  maxUseful: number;
+  /** Så många behövs för listans vampyraktioner. */
+  needed: number;
+}
+
+/** Det som lämnas in med listan utöver själva actions. */
+export interface DraftExtras {
+  royalPrivilegesToSpend: number;
+}
+
 export interface DraftAnalysis {
   entries: DraftEntryInfo[];
   /** Bara vampyrens slots. */
   apUsed: number;
+  /** Inklusive extra actions från spenderade Royal Privileges. */
   apTotal: number;
+  royalPrivileges: RoyalPrivilegeInfo;
   /** En rad per egen minion, i id-ordning. */
   minionActions: MinionActionCount[];
   totalCost: number;
@@ -194,9 +217,10 @@ export interface PlayerScreenPort {
     performer: PerformerRef,
     params: Params,
   ): TargetStep | null;
-  analyze(draft: readonly DraftAction[]): DraftAnalysis;
-  /** Lämnar in listan. */
-  confirm(draft: readonly DraftAction[]): ConfirmResult;
+  /** `extras` saknas = inga Royal Privileges spenderas. */
+  analyze(draft: readonly DraftAction[], extras?: DraftExtras): DraftAnalysis;
+  /** Lämnar in listan, med de Royal Privileges som spenderas. */
+  confirm(draft: readonly DraftAction[], extras?: DraftExtras): ConfirmResult;
   /** Låser upp en inlämnad lista. */
   unlock(): void;
   isLocked(): boolean;
